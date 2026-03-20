@@ -15,6 +15,7 @@ import SystemHealth from "@/components/SystemHealth";
 import StatusBar from "@/components/StatusBar";
 import BusinessMetricsPanel from "@/components/BusinessMetricsPanel";
 import DeploymentPanel from "@/components/DeploymentPanel";
+import FinancialMonitor from "@/components/FinancialMonitor";
 
 export default function Dashboard() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [deployments, setDeployments] = useState<Deployment[]>([]);
+  const [balances, setBalances] = useState<ProviderBalance[]>([]);
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
   const [businessMetrics, setBusinessMetrics] = useState<BusinessMetrics | null>(null);
   
@@ -35,7 +37,7 @@ export default function Dashboard() {
     try {
       const [
         agentsRes, projectsRes, tasksRes, 
-        activitiesRes, metricsRes, businessRes, deploRes
+        activitiesRes, metricsRes, businessRes, deploRes, balRes
       ] = await Promise.all([
         supabase.from("agents").select("*").order("department").order("name"),
         supabase.from("projects").select("*").order("created_at", { ascending: false }),
@@ -44,6 +46,7 @@ export default function Dashboard() {
         supabase.from("system_metrics").select("*").order("snapshot_at", { ascending: false }).limit(1).single(),
         supabase.from("business_metrics").select("*").order("updated_at", { ascending: false }).limit(1).single(),
         supabase.from("deployments").select("*").order("created_at", { ascending: false }).limit(5),
+        supabase.from("provider_balances").select("*").order("balance_usd", { ascending: true }),
       ]);
 
       if (agentsRes.data) setAgents(agentsRes.data);
@@ -53,6 +56,7 @@ export default function Dashboard() {
       if (metricsRes.data) setMetrics(metricsRes.data);
       if (businessRes.data) setBusinessMetrics(businessRes.data);
       if (deploRes.data) setDeployments(deploRes.data);
+      if (balRes.data) setBalances(balRes.data);
       
       setLastUpdate(new Date());
       setErrorCount(0);
@@ -73,6 +77,14 @@ export default function Dashboard() {
       .channel("dashboard-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "business_metrics" }, (p) => setBusinessMetrics(p.new as BusinessMetrics))
       .on("postgres_changes", { event: "*", schema: "public", table: "system_metrics" }, (p) => setMetrics(p.new as SystemMetrics))
+      .on("postgres_changes", { event: "*", schema: "public", table: "provider_balances" }, (p) => {
+        setBalances((prev) => {
+          const updated = p.new as ProviderBalance;
+          if (p.eventType === "UPDATE") return prev.map(b => b.id === updated.id ? updated : b);
+          if (p.eventType === "INSERT") return [...prev, updated];
+          return prev;
+        });
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "deployments" }, (p) => loadData()) // Refresh all on deploy
       .on("postgres_changes", { event: "*", schema: "public", table: "agents" }, (payload) => {
         setAgents((prev) => {
@@ -183,6 +195,7 @@ export default function Dashboard() {
 
           {/* Sidebar */}
           <div className="space-y-8">
+            <FinancialMonitor balances={balances} />
             <SystemHealth metrics={metrics} />
             <ActivityFeed activities={activities} />
             <DeploymentPanel deployments={deployments} />

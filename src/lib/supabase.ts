@@ -112,3 +112,11 @@ export type Deployment = {
   created_at: string;
   inspector_url: string | null;
 };
+
+export type ProviderBalance = {
+  id: string;
+  provider_name: string;
+  balance_usd: number;
+  alert_threshold: number;
+  last_updated: string;
+};
