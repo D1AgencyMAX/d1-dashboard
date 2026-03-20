@@ -65,7 +65,7 @@ export default function AgentGrid({ agents, clientMode }: { agents: Agent[], cli
             {deptAgents.map((agent) => (
               <div
                 key={agent.id}
-                className={`relative rounded-lg border-l-4 ${departmentColors[dept] || "border-l-gray-500"} bg-[var(--bg-card)] border border-[var(--border)] p-4 transition-all hover:bg-[var(--bg-card-hover)] hover:border-[var(--accent-blue)]/30 ${agent.status === "working" ? "pulse-active" : ""}`}
+                className={`relative rounded-lg border-l-4 ${departmentColors[dept] || "border-l-gray-500"} bg-[var(--bg-card)] border border-[var(--border)] p-4 transition-all hover:bg-[var(--bg-card-hover)] hover:border-[var(--accent-blue)]/30 ${agent.status === "working" ? "shadow-[0_0_15px_rgba(59,130,246,0.1)] border-blue-500/30" : ""}`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>

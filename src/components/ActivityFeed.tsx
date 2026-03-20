@@ -1,58 +1,58 @@
 "use client";
 
 import { ActivityItem } from "@/lib/supabase";
-
-const eventIcons: Record<string, string> = {
-  task_started: "🚀",
-  task_completed: "✅",
-  task_failed: "❌",
-  agent_online: "🟢",
-  agent_offline: "🔴",
-  project_created: "📁",
-  project_completed: "🏆",
-  cost_alert: "⚠️",
-  system: "⚙️",
-  deployment: "🚢",
-};
-
-function timeAgo(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (seconds < 60) return "just now";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86400)}d ago`;
-}
+import { useEffect, useRef } from "react";
 
 export default function ActivityFeed({ activities }: { activities: ActivityItem[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [activities]);
+
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden">
-      <div className="p-4 border-b border-[var(--border)]">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)]">📡 Live Activity</h2>
+    <div className="rounded-xl border border-[var(--border)] bg-[#05050a] overflow-hidden flex flex-col h-[400px]">
+      <div className="p-3 border-b border-[var(--border)] bg-[var(--bg-card)] flex items-center justify-between">
+        <h2 className="text-xs font-bold text-[var(--text-primary)] font-mono flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+          AGENT_ACTIVITY_STREAM
+        </h2>
+        <span className="text-[10px] font-mono text-[var(--text-secondary)]">LIVE_FEED</span>
       </div>
-      <div className="divide-y divide-[var(--border)] max-h-[400px] overflow-y-auto">
+      
+      <div 
+        ref={scrollRef}
+        className="flex-1 p-4 font-mono text-[11px] overflow-y-auto space-y-1.5"
+      >
         {activities.length === 0 ? (
-          <div className="p-8 text-center text-[var(--text-secondary)]">
-            <p className="text-3xl mb-2">🔇</p>
-            <p className="text-sm">No activity yet — agents are standing by</p>
-          </div>
+          <div className="text-gray-600 animate-pulse">Initializing data stream...</div>
         ) : (
           activities.map((item) => (
-            <div key={item.id} className="p-3 hover:bg-[var(--bg-card-hover)] transition-colors">
-              <div className="flex items-start gap-3">
-                <span className="text-lg mt-0.5">{eventIcons[item.event_type] || "📌"}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[var(--text-primary)]">{item.title}</p>
-                  {item.description && (
-                    <p className="text-xs text-[var(--text-secondary)] mt-0.5 truncate">{item.description}</p>
-                  )}
-                </div>
-                <span className="text-xs text-[var(--text-secondary)] whitespace-nowrap">{timeAgo(item.created_at)}</span>
+            <div key={item.id} className="flex gap-3 leading-relaxed group">
+              <span className="text-gray-600 shrink-0">
+                [{new Date(item.created_at).toLocaleTimeString([], { hour12: false })}]
+              </span>
+              <div className="flex-1">
+                <span className="text-blue-400 font-bold mr-2 uppercase">
+                  {item.event_type.replace('_', ' ')}:
+                </span>
+                <span className="text-gray-300 group-hover:text-white transition-colors">
+                  {item.title}
+                </span>
+                {item.description && (
+                  <span className="text-gray-500 ml-2 italic">— {item.description}</span>
+                )}
               </div>
             </div>
           ))
         )}
+      </div>
+      
+      <div className="p-1.5 bg-[var(--bg-secondary)] border-t border-[var(--border)] text-[9px] font-mono text-gray-500 flex justify-between px-3">
+        <span>STRM_ACTIVE: {activities.length} EVTS</span>
+        <span className="animate-pulse">_CURSOR</span>
       </div>
     </div>
   );
