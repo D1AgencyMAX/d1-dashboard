@@ -142,7 +142,7 @@ export default function Dashboard() {
                   <h1 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">DIGITAL ONE AGENCY</h1>
                   <p className="text-[10px] text-[var(--text-secondary)] font-mono flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    LIVE_CONTROL_SYSTEM_v2.1_PROD
+                    COMMAND_CENTER_v3.0
                   </p>
                 </div>
               </div>
@@ -215,9 +215,9 @@ export default function Dashboard() {
             <span>SYSTEM_LOC: AU_BRISBANE</span>
           </div>
           <div className="flex items-center gap-6">
-            <span className="text-blue-500">ENGINE: OPENCLAW_CORE</span>
+            <span className="text-blue-500">ENGINE: OPENCLAW × MAX</span>
             <span className="text-green-500">UPTIME: {metrics ? (metrics.uptime_seconds / 3600).toFixed(1) : '0'}H</span>
-            <span className="text-purple-500">TASKS: {tasks.length}</span>
+            <span className="text-purple-500">AGENTS: 20 | TASKS: {tasks.length}</span>
           </div>
         </div>
       </footer>
