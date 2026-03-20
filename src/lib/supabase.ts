@@ -69,3 +69,19 @@ export type CostLogEntry = {
   cost_usd: number;
   created_at: string;
 };
+
+export type SystemMetrics = {
+  id: string;
+  total_agents_active: number;
+  total_tasks_running: number;
+  total_cost_usd: number;
+  tokens_used: number;
+  backup_status: string | null;
+  last_backup_at: string | null;
+  uptime_seconds: number;
+  gateway_status: string | null;
+  github_status: string | null;
+  vercel_status: string | null;
+  supabase_status: string | null;
+  snapshot_at: string;
+};

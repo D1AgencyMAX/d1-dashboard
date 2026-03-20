@@ -7,6 +7,7 @@ import AgentGrid from "@/components/AgentGrid";
 import ActivityFeed from "@/components/ActivityFeed";
 import CostBreakdown from "@/components/CostBreakdown";
 import ProjectsList from "@/components/ProjectsList";
+import SystemHealth from "@/components/SystemHealth";
 
 export default function Dashboard() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -16,20 +17,24 @@ export default function Dashboard() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [connected, setConnected] = useState(false);
 
+  const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
+
   // Initial data fetch
   useEffect(() => {
     async function loadData() {
-      const [agentsRes, projectsRes, tasksRes, activitiesRes] = await Promise.all([
+      const [agentsRes, projectsRes, tasksRes, activitiesRes, metricsRes] = await Promise.all([
         supabase.from("agents").select("*").order("department").order("name"),
         supabase.from("projects").select("*").order("created_at", { ascending: false }),
         supabase.from("tasks").select("*").order("created_at", { ascending: false }),
         supabase.from("activity_feed").select("*").order("created_at", { ascending: false }).limit(50),
+        supabase.from("system_metrics").select("*").order("snapshot_at", { ascending: false }).limit(1).single(),
       ]);
 
       if (agentsRes.data) setAgents(agentsRes.data);
       if (projectsRes.data) setProjects(projectsRes.data);
       if (tasksRes.data) setTasks(tasksRes.data);
       if (activitiesRes.data) setActivities(activitiesRes.data);
+      if (metricsRes.data) setMetrics(metricsRes.data);
       setLastUpdate(new Date());
     }
 
@@ -40,6 +45,10 @@ export default function Dashboard() {
   useEffect(() => {
     const channel = supabase
       .channel("dashboard-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "system_metrics" }, (payload) => {
+        setMetrics(payload.new as SystemMetrics);
+        setLastUpdate(new Date());
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "agents" }, (payload) => {
         setAgents((prev) => {
           if (payload.eventType === "UPDATE") {
@@ -136,6 +145,7 @@ export default function Dashboard() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            <SystemHealth metrics={metrics} />
             <ActivityFeed activities={activities} />
             <CostBreakdown agents={agents} />
             <ProjectsList projects={projects} />
