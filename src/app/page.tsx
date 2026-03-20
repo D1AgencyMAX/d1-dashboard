@@ -16,6 +16,7 @@ import StatusBar from "@/components/StatusBar";
 import BusinessMetricsPanel from "@/components/BusinessMetricsPanel";
 import DeploymentPanel from "@/components/DeploymentPanel";
 import FinancialMonitor from "@/components/FinancialMonitor";
+import ProjectBoard from "@/components/ProjectBoard";
 
 export default function Dashboard() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -189,7 +190,8 @@ export default function Dashboard() {
         {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Agent grid - takes 2 cols */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
+            <ProjectBoard />
             <AgentGrid agents={agents} clientMode={clientMode} />
           </div>
 
