@@ -68,9 +68,12 @@ export default function AgentGrid({ agents, clientMode }: { agents: Agent[], cli
                 className={`relative rounded-lg border-l-4 ${departmentColors[dept] || "border-l-gray-500"} bg-[var(--bg-card)] border border-[var(--border)] p-4 transition-all hover:bg-[var(--bg-card-hover)] hover:border-[var(--accent-blue)]/30 ${agent.status === "working" ? "shadow-[0_0_15px_rgba(59,130,246,0.1)] border-blue-500/30" : ""}`}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h4 className="font-semibold text-sm text-[var(--text-primary)]">{agent.name}</h4>
-                    <p className="text-xs text-[var(--text-secondary)]">{agent.role}</p>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-1.5 h-1.5 rounded-full ${agent.status === 'working' ? 'bg-blue-400 animate-ping' : 'bg-green-500/50'}`} title="Agent Heartbeat" />
+                    <div>
+                      <h4 className="font-semibold text-sm text-[var(--text-primary)]">{agent.name}</h4>
+                      <p className="text-xs text-[var(--text-secondary)]">{agent.role}</p>
+                    </div>
                   </div>
                   <StatusBadge status={agent.status} />
                 </div>

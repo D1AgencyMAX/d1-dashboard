@@ -17,6 +17,7 @@ export type Agent = {
   tokens_used: number;
   cost_usd: number;
   last_active: string | null;
+  last_heartbeat_at: string | null;
 };
 
 export type Project = {
