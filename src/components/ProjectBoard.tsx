@@ -71,10 +71,14 @@ export default function ProjectBoard() {
         </div>
       </div>
       <div className="p-4 border-t border-[var(--border)] bg-[var(--bg-secondary)]/10">
-        <div className="aspect-video bg-[#0a0a1a] rounded border border-[var(--border)] flex items-center justify-center flex-col gap-2 group cursor-pointer hover:border-blue-500/50 transition-all">
+        <a 
+          href="https://ndis-preview.vercel.app" 
+          target="_blank"
+          className="aspect-video bg-[#0a0a1a] rounded border border-[var(--border)] flex items-center justify-center flex-col gap-2 group cursor-pointer hover:border-blue-500/50 transition-all"
+        >
           <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">🔗</div>
-          <span className="text-[10px] font-mono text-blue-400 group-hover:underline uppercase">Syncing Figma Prototype...</span>
-        </div>
+          <span className="text-[10px] font-mono text-blue-400 group-hover:underline uppercase">View Live Design Prototype</span>
+        </a>
       </div>
     </div>
   );
