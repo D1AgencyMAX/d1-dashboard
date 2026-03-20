@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase, Agent, Project, Task, ActivityItem } from "@/lib/supabase";
+import { supabase, Agent, Project, Task, ActivityItem, SystemMetrics } from "@/lib/supabase";
 import StatsCards from "@/components/StatsCards";
 import AgentGrid from "@/components/AgentGrid";
 import ActivityFeed from "@/components/ActivityFeed";
