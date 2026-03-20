@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { 
   supabase, Agent, Project, Task, ActivityItem, 
-  SystemMetrics, BusinessMetrics, Deployment 
+  SystemMetrics, BusinessMetrics, Deployment, ProviderBalance 
 } from "@/lib/supabase";
 
 import StatsCards from "@/components/StatsCards";
