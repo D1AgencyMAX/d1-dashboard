@@ -27,7 +27,7 @@ const departmentEmoji: Record<string, string> = {
   Trading: "📉",
 };
 
-export default function AgentGrid({ agents }: { agents: Agent[] }) {
+export default function AgentGrid({ agents, clientMode }: { agents: Agent[], clientMode: boolean }) {
   // Group by department
   const departments = agents.reduce((acc, agent) => {
     if (!acc[agent.department]) acc[agent.department] = [];
@@ -93,14 +93,16 @@ export default function AgentGrid({ agents }: { agents: Agent[] }) {
                       {agent.tokens_used > 1000 ? `${(agent.tokens_used / 1000).toFixed(0)}K` : agent.tokens_used}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs text-[var(--text-secondary)]">Cost</p>
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">${Number(agent.cost_usd || 0).toFixed(2)}</p>
-                  </div>
+                  {!clientMode && (
+                    <div>
+                      <p className="text-xs text-[var(--text-secondary)]">Cost</p>
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">${Number(agent.cost_usd || 0).toFixed(2)}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-[var(--border)]">
-                  <p className="text-[10px] text-[var(--text-secondary)] font-mono truncate">{agent.model}</p>
+                  <p className="text-[10px] text-[var(--text-secondary)] font-mono truncate">{clientMode ? "MANAGED AGENT" : agent.model}</p>
                 </div>
               </div>
             ))}

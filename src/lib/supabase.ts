@@ -85,3 +85,30 @@ export type SystemMetrics = {
   supabase_status: string | null;
   snapshot_at: string;
 };
+
+export type BusinessMetrics = {
+  id: string;
+  leads_today: number;
+  conversion_rate: number;
+  revenue_total: number;
+  pipeline_value: number;
+  updated_at: string;
+};
+
+export type AgentLog = {
+  id: string;
+  agent_id: string;
+  level: 'info' | 'warn' | 'error' | 'critical';
+  message: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+export type Deployment = {
+  id: string;
+  name: string;
+  status: string;
+  url: string | null;
+  created_at: string;
+  inspector_url: string | null;
+};
