@@ -5,6 +5,120 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+export interface Campaign {
+  id: string;
+  platform: 'meta' | 'google' | 'tiktok';
+  name: string;
+  client_id?: string;
+  status: 'active' | 'paused' | 'completed';
+  spend_usd: number;
+  budget_usd: number;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  roas: number;
+  target_roas: number;
+  last_updated: string;
+  created_at: string;
+}
+
+export interface LeadFlow {
+  id: string;
+  timestamp: string;
+  new_leads: number;
+  calls_booked: number;
+  consultations_held: number;
+  deals_closed: number;
+}
+
+export interface LeadFlowMetrics {
+  leads_today: number;
+  calls_today: number;
+  consultations_today: number;
+  closes_today: number;
+  lead_to_call_rate: number;
+  call_to_consultation_rate: number;
+  consultation_to_close_rate: number;
+  hourly_data: LeadFlow[];
+}
+
+export interface Pipeline {
+  id: string;
+  client_name: string;
+  client_id?: string;
+  stage: 'discovery' | 'qualified' | 'proposal' | 'won' | 'lost';
+  value_usd: number;
+  entered_at: string;
+  expected_close_date?: string;
+  probability: number;
+  notes?: string;
+  updated_at: string;
+}
+
+export interface PipelineStage {
+  stage: 'discovery' | 'qualified' | 'proposal' | 'won';
+  count: number;
+  value_usd: number;
+  clients: Array<{
+    name: string;
+    value: number;
+    entered_at: string;
+    expected_close_date?: string;
+  }>;
+  conversion_rate?: number;
+}
+
+export interface Alert {
+  id: string;
+  type: 'urgent' | 'warning' | 'info';
+  title: string;
+  description?: string;
+  assigned_to?: string;
+  action_url?: string;
+  dismissed: boolean;
+  created_at: string;
+}
+
+export interface RevenueHistory {
+  id: string;
+  month: string;
+  revenue_usd: number;
+  created_at: string;
+}
+
+export interface RevenueDataPoint {
+  month: Date;
+  actual?: number;
+  projected?: number;
+  confidence_high?: number;
+  confidence_low?: number;
+}
+
+export interface AgentCapacity {
+  id: string;
+  agent_id: string;
+  agent_name: string;
+  date: string;
+  project_count: number;
+  status: 'available' | 'busy' | 'overloaded';
+  projects: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ClientProfit {
+  id: string;
+  client_id?: string;
+  client_name: string;
+  revenue_usd: number;
+  labor_cost_usd: number;
+  tools_cost_usd: number;
+  ads_cost_usd: number;
+  profit_usd: number;
+  margin_percent: number;
+  updated_at: string;
+}
+
 export type Agent = {
   id: string;
   name: string;

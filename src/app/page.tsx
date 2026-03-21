@@ -18,6 +18,8 @@ import DeploymentPanel from "@/components/DeploymentPanel";
 import FinancialMonitor from "@/components/FinancialMonitor";
 import ProjectBoard from "@/components/ProjectBoard";
 
+import ErrorBoundary from "@/components/ErrorBoundary";
+
 export default function Dashboard() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -114,6 +116,19 @@ export default function Dashboard() {
     };
   }, [loadData]);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center font-mono">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 animate-pulse flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20 mb-4">D1</div>
+        <h1 className="text-[var(--text-primary)] font-bold text-xl mb-2">INITIALIZING_DASHBOARD</h1>
+        <div className="flex items-center gap-2 text-[var(--text-secondary)] text-xs">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce" />
+          CONNECTING_TO_SUPABASE_FLEET...
+        </div>
+      </div>
+    );
+  }
+
   if (errorCount > 3) {
     return (
       <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col items-center justify-center font-mono">
@@ -182,27 +197,51 @@ export default function Dashboard() {
       {/* Main content */}
       <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
         {/* Business Metrics */}
-        <BusinessMetricsPanel metrics={businessMetrics} clientMode={clientMode} />
+        <ErrorBoundary>
+          <BusinessMetricsPanel metrics={businessMetrics} clientMode={clientMode} />
+        </ErrorBoundary>
         
         {/* Stats */}
-        {!clientMode && <StatsCards agents={agents} tasks={tasks} />}
+        {!clientMode && (
+          <ErrorBoundary>
+            <StatsCards agents={agents} tasks={tasks} />
+          </ErrorBoundary>
+        )}
 
         {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Agent grid - takes 2 cols */}
           <div className="lg:col-span-2 space-y-8">
-            <ProjectBoard />
-            <AgentGrid agents={agents} clientMode={clientMode} />
+            <ErrorBoundary>
+              <ProjectBoard />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <AgentGrid agents={agents} clientMode={clientMode} />
+            </ErrorBoundary>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-8">
-            <FinancialMonitor balances={balances} />
-            <SystemHealth metrics={metrics} />
-            <ActivityFeed activities={activities} />
-            <DeploymentPanel deployments={deployments} />
-            {!clientMode && <CostBreakdown agents={agents} />}
-            <ProjectsList projects={projects} />
+            <ErrorBoundary>
+              <FinancialMonitor balances={balances} />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <SystemHealth metrics={metrics} />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <ActivityFeed activities={activities} />
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <DeploymentPanel deployments={deployments} />
+            </ErrorBoundary>
+            {!clientMode && (
+              <ErrorBoundary>
+                <CostBreakdown agents={agents} />
+              </ErrorBoundary>
+            )}
+            <ErrorBoundary>
+              <ProjectsList projects={projects} />
+            </ErrorBoundary>
           </div>
         </div>
       </main>
