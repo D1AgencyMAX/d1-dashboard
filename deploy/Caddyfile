@@ -1,0 +1,24 @@
+# Caddy serves HTTPS automatically. For nip.io-style wildcards it uses
+# Let's Encrypt's HTTP challenge on :80 so no DNS fiddling is needed.
+# Set APP_HOSTNAME in .env, e.g. comedian.yourdomain.com or 1-2-3-4.nip.io.
+
+{$APP_HOSTNAME} {
+    encode zstd gzip
+
+    # Meta's webhook should only reach /api/whatsapp — optional hardening:
+    # request_body /api/whatsapp/webhook {
+    #     max_size 1MB
+    # }
+
+    reverse_proxy app:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    log {
+        output stdout
+        format console
+    }
+}
