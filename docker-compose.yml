@@ -1,6 +1,12 @@
-# Run the comedian dashboard + a Caddy reverse proxy with automatic HTTPS.
-# Copy .env.example -> .env and fill in real values before running.
-# Start with: docker compose up -d --build
+# Default stack: app-only, bound to localhost so it never collides with
+# anything already running on :80/:443. Use this on VPS 1 where VoxReach
+# already owns the edge — then proxy to 127.0.0.1:${APP_PORT:-3100} from
+# the existing Caddy/nginx.
+#
+# For a greenfield VPS that needs its own HTTPS edge, layer on Caddy with:
+#   docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+#
+# Start: docker compose up -d --build
 
 services:
   app:
@@ -25,32 +31,10 @@ services:
       WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN}
       WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN}
       WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET}
-    expose:
-      - "3000"
-    networks:
-      - edge
-
-  caddy:
-    image: caddy:2-alpine
-    container_name: comedian-caddy
-    restart: unless-stopped
-    depends_on:
-      - app
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    environment:
-      APP_HOSTNAME: ${APP_HOSTNAME}
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3100}:3000"
     networks:
       - edge
 
 networks:
   edge:
-
-volumes:
-  caddy_data:
-  caddy_config:
