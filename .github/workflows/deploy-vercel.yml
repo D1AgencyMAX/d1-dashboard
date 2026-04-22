@@ -1,0 +1,55 @@
+name: Deploy to Vercel
+
+# Runs only when you've configured Vercel GitHub secrets.
+# If they're missing, the workflow skips cleanly.
+#
+# Required secrets (Settings -> Secrets -> Actions):
+#   VERCEL_TOKEN            - from vercel.com/account/tokens
+#   VERCEL_ORG_ID           - from Vercel project Settings -> General
+#   VERCEL_PROJECT_ID       - from Vercel project Settings -> General
+#
+# Optional: connect the repo through Vercel's GitHub App instead and
+# this workflow becomes redundant. Keep it as a fallback for branches
+# the GitHub App doesn't cover or for manual re-deploys.
+
+on:
+  push:
+    branches:
+      - main
+      - "claude/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: ${{ vars.VERCEL_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel project settings
+        run: vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+
+      - name: Build
+        run: vercel build --token=$VERCEL_TOKEN
+
+      - name: Deploy preview (non-main branches)
+        if: github.ref != 'refs/heads/main'
+        run: vercel deploy --prebuilt --token=$VERCEL_TOKEN
+
+      - name: Deploy production (main branch only)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+          vercel build --prod --token=$VERCEL_TOKEN
+          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "installCommand": "npm install",
+  "functions": {
+    "src/app/api/whatsapp/webhook/route.ts": { "maxDuration": 60 },
+    "src/app/api/whatsapp/outbound/route.ts": { "maxDuration": 30 },
+    "src/app/api/playground/chat/route.ts": { "maxDuration": 30 },
+    "src/app/api/playground/tts/route.ts": { "maxDuration": 30 },
+    "src/app/api/media/[id]/route.ts": { "maxDuration": 30 }
+  }
+}
