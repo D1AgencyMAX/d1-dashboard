@@ -4,11 +4,17 @@ import { useEffect, useRef, useState } from "react";
 
 type Turn = { role: "user" | "assistant"; content: string; audioUrl?: string };
 type Stats = {
-  totalCost: number;
+  brainCost: number;
+  voiceCost: number;
+  voiceChars: number;
   totalInputTokens: number;
   totalOutputTokens: number;
   lastLatencyMs: number;
 };
+
+// ElevenLabs pay-as-you-go pricing reference: used only for display; the
+// authoritative number is on elevenlabs.io/app/usage.
+const ELEVENLABS_PRICE_PER_1K_CHARS = 0.3;
 
 // Web Speech API — declared minimally. Chrome/Edge/Safari only.
 type SpeechRecognitionLike = {
@@ -42,7 +48,9 @@ export default function PlaygroundPage() {
   const [speaking, setSpeaking] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const [stats, setStats] = useState<Stats>({
-    totalCost: 0,
+    brainCost: 0,
+    voiceCost: 0,
+    voiceChars: 0,
     totalInputTokens: 0,
     totalOutputTokens: 0,
     lastLatencyMs: 0,
@@ -139,12 +147,17 @@ export default function PlaygroundPage() {
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         const reason = j.error ?? String(res.status);
-        // ElevenLabs unreachable (common in sandboxed/allow-listed environments).
-        // Fall back to the browser's built-in voice so the demo still speaks.
         setError(`ElevenLabs unreachable (${reason}). Using browser voice fallback.`);
         speakLocally(text);
         return null;
       }
+      const costHeader = res.headers.get("X-Cost-Usd");
+      const cost = costHeader ? Number(costHeader) : (text.length / 1000) * ELEVENLABS_PRICE_PER_1K_CHARS;
+      setStats((s) => ({
+        ...s,
+        voiceCost: Number((s.voiceCost + (isFinite(cost) ? cost : 0)).toFixed(6)),
+        voiceChars: s.voiceChars + text.length,
+      }));
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       if (audioRef.current) {
@@ -197,7 +210,8 @@ export default function PlaygroundPage() {
       }
       setHistory((prev) => [...prev, { role: "assistant", content: reply, audioUrl }]);
       setStats((s) => ({
-        totalCost: Number((s.totalCost + (json.costUsd ?? 0)).toFixed(6)),
+        ...s,
+        brainCost: Number((s.brainCost + (json.costUsd ?? 0)).toFixed(6)),
         totalInputTokens: s.totalInputTokens + (json.inputTokens ?? 0),
         totalOutputTokens: s.totalOutputTokens + (json.outputTokens ?? 0),
         lastLatencyMs: json.latencyMs ?? 0,
@@ -227,7 +241,14 @@ export default function PlaygroundPage() {
     setHistory([]);
     historyRef.current = [];
     setCharacterDropped(false);
-    setStats({ totalCost: 0, totalInputTokens: 0, totalOutputTokens: 0, lastLatencyMs: 0 });
+    setStats({
+      brainCost: 0,
+      voiceCost: 0,
+      voiceChars: 0,
+      totalInputTokens: 0,
+      totalOutputTokens: 0,
+      lastLatencyMs: 0,
+    });
     setError(null);
     if (audioRef.current) {
       audioRef.current.pause();
@@ -255,8 +276,7 @@ export default function PlaygroundPage() {
             Voice mode
           </label>
           <span className="hidden sm:inline">
-            ${stats.totalCost.toFixed(4)} · in {stats.totalInputTokens} · out{" "}
-            {stats.totalOutputTokens}
+            brain ${stats.brainCost.toFixed(4)} · voice ${stats.voiceCost.toFixed(4)} ({stats.voiceChars}ch)
             {stats.lastLatencyMs ? ` · ${stats.lastLatencyMs}ms` : ""}
           </span>
           <button
