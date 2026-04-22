@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Turn = { role: "user" | "assistant"; content: string; audioUrl?: string };
+type Phase = "idle" | "listening" | "thinking" | "speaking";
 type Stats = {
   brainCost: number;
   voiceCost: number;
@@ -23,8 +24,14 @@ type SpeechRecognitionLike = {
   lang: string;
   start: () => void;
   stop: () => void;
-  onresult: ((e: { results: { isFinal: boolean; 0: { transcript: string } }[] & { length: number } }) => void) | null;
+  abort: () => void;
+  onresult:
+    | ((e: {
+        results: { isFinal: boolean; 0: { transcript: string } }[] & { length: number };
+      }) => void)
+    | null;
   onend: (() => void) | null;
+  onstart: (() => void) | null;
   onerror: ((e: { error?: string }) => void) | null;
 };
 
@@ -40,12 +47,11 @@ function getSpeechRecognition(): (new () => SpeechRecognitionLike) | null {
 export default function PlaygroundPage() {
   const [history, setHistory] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [conversationActive, setConversationActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [characterDropped, setCharacterDropped] = useState(false);
   const [voiceMode, setVoiceMode] = useState(true);
-  const [listening, setListening] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const [stats, setStats] = useState<Stats>({
     brainCost: 0,
@@ -59,17 +65,211 @@ export default function PlaygroundPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const historyRef = useRef<Turn[]>([]);
+  // Async callbacks (TTS onended, recognition onend) need the latest values,
+  // but setState closures capture stale ones. Refs bridge the gap.
+  const conversationActiveRef = useRef(false);
+  const phaseRef = useRef<Phase>("idle");
+  const characterDroppedRef = useRef(false);
 
   useEffect(() => {
     historyRef.current = history;
   }, [history]);
+  useEffect(() => {
+    conversationActiveRef.current = conversationActive;
+  }, [conversationActive]);
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+  useEffect(() => {
+    characterDroppedRef.current = characterDropped;
+  }, [characterDropped]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [history, loading]);
+  }, [history, phase]);
 
+  // --- Recognition helpers -------------------------------------------------
+  const startListening = useCallback(() => {
+    const rec = recognitionRef.current;
+    if (!rec) return;
+    if (phaseRef.current === "listening") return;
+    if (characterDroppedRef.current) return;
+    try {
+      setError(null);
+      rec.start();
+    } catch {
+      // Some browsers throw if start() is called while already in a start
+      // state. onend will fire; the loop will self-heal.
+    }
+  }, []);
+
+  const stopListening = useCallback(() => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  // --- TTS -----------------------------------------------------------------
+  const speakLocally = useCallback((text: string, onDone: () => void) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      onDone();
+      return;
+    }
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-AU";
+      utter.rate = 1.0;
+      utter.pitch = 0.85;
+      const voices = window.speechSynthesis.getVoices();
+      const preferred =
+        voices.find((v) => /en-AU/i.test(v.lang) && /Male|Karen|Lee/i.test(v.name)) ||
+        voices.find((v) => /en-AU/i.test(v.lang)) ||
+        voices.find((v) => /en-GB/i.test(v.lang));
+      if (preferred) utter.voice = preferred;
+      utter.onend = () => onDone();
+      utter.onerror = () => onDone();
+      window.speechSynthesis.speak(utter);
+    } catch {
+      onDone();
+    }
+  }, []);
+
+  const playTts = useCallback(
+    async (text: string, onDone: () => void): Promise<string | null> => {
+      try {
+        const res = await fetch("/api/playground/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({}));
+          const reason = j.error ?? String(res.status);
+          setError(`ElevenLabs unreachable (${reason}). Using browser voice fallback.`);
+          speakLocally(text, onDone);
+          return null;
+        }
+        const costHeader = res.headers.get("X-Cost-Usd");
+        const cost = costHeader
+          ? Number(costHeader)
+          : (text.length / 1000) * ELEVENLABS_PRICE_PER_1K_CHARS;
+        setStats((s) => ({
+          ...s,
+          voiceCost: Number((s.voiceCost + (isFinite(cost) ? cost : 0)).toFixed(6)),
+          voiceChars: s.voiceChars + text.length,
+        }));
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = audioRef.current;
+        if (!audio) {
+          onDone();
+          return null;
+        }
+        audio.src = url;
+        const finish = () => {
+          audio.onended = null;
+          audio.onerror = null;
+          onDone();
+        };
+        audio.onended = finish;
+        audio.onerror = finish;
+        try {
+          await audio.play();
+        } catch {
+          // Autoplay blocked. Finish so the loop moves on.
+          finish();
+        }
+        return url;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "tts failed");
+        speakLocally(text, onDone);
+        return null;
+      }
+    },
+    [speakLocally],
+  );
+
+  // --- Sending a turn ------------------------------------------------------
+  const send = useCallback(
+    async (overrideText?: string) => {
+      const text = (overrideText ?? draft).trim();
+      if (!text) return;
+      if (phaseRef.current === "thinking" || phaseRef.current === "speaking") return;
+      setError(null);
+      setDraft("");
+      setPhase("thinking");
+      const nextHistory = [...historyRef.current, { role: "user", content: text } as Turn];
+      setHistory(nextHistory);
+      try {
+        const res = await fetch("/api/playground/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            history: historyRef.current.map((t) => ({ role: t.role, content: t.content })),
+            userMessage: text,
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          setError(json.error ?? "failed");
+          setPhase("idle");
+          return;
+        }
+        const reply = (json.text as string) ?? "(no reply)";
+        setStats((s) => ({
+          ...s,
+          brainCost: Number((s.brainCost + (json.costUsd ?? 0)).toFixed(6)),
+          totalInputTokens: s.totalInputTokens + (json.inputTokens ?? 0),
+          totalOutputTokens: s.totalOutputTokens + (json.outputTokens ?? 0),
+          lastLatencyMs: json.latencyMs ?? 0,
+        }));
+        if (json.shouldEndCharacter) {
+          setCharacterDropped(true);
+          setConversationActive(false);
+        }
+
+        // The onDone callback is what closes the turn and optionally reopens
+        // the mic for continuous conversation.
+        const onTurnComplete = () => {
+          setPhase("idle");
+          if (
+            conversationActiveRef.current &&
+            !characterDroppedRef.current &&
+            recognitionRef.current
+          ) {
+            // Small delay so the browser releases the audio element's mic
+            // contention before we re-start recognition.
+            setTimeout(() => {
+              if (conversationActiveRef.current && phaseRef.current === "idle") {
+                setPhase("listening");
+                startListening();
+              }
+            }, 250);
+          }
+        };
+
+        let audioUrl: string | undefined;
+        if (voiceMode && reply) {
+          setPhase("speaking");
+          const url = await playTts(reply, onTurnComplete);
+          if (url) audioUrl = url;
+        } else {
+          onTurnComplete();
+        }
+        setHistory((prev) => [...prev, { role: "assistant", content: reply, audioUrl }]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "send failed");
+        setPhase("idle");
+      }
+    },
+    [draft, voiceMode, playTts, startListening],
+  );
+
+  // --- Mount: wire up recognition ------------------------------------------
   useEffect(() => {
-    // Prime the SpeechSynthesis voices list — some browsers populate it async.
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.getVoices();
       window.speechSynthesis.onvoiceschanged = () => {
@@ -83,161 +283,79 @@ export default function PlaygroundPage() {
     rec.continuous = false;
     rec.interimResults = false;
     rec.lang = "en-AU";
+    rec.onstart = () => setPhase("listening");
     rec.onresult = (e) => {
       const transcript = Array.from(
         { length: e.results.length },
         (_, i) => (e.results[i] as { isFinal: boolean; 0: { transcript: string } })[0].transcript,
       ).join(" ");
       const finalText = transcript.trim();
-      setListening(false);
       if (finalText) {
         void send(finalText);
+      } else {
+        setPhase("idle");
       }
     };
-    rec.onend = () => setListening(false);
+    rec.onend = () => {
+      // If recognition ended without a result (silence / no-speech),
+      // drop to idle. The TTS callback (or the user) will restart it if
+      // conversation mode is still on.
+      if (phaseRef.current === "listening") setPhase("idle");
+      // In continuous mode, if no result fired and we didn't transition to
+      // thinking, retry after a beat so the user doesn't have to tap again.
+      if (
+        conversationActiveRef.current &&
+        phaseRef.current === "idle" &&
+        !characterDroppedRef.current
+      ) {
+        setTimeout(() => {
+          if (conversationActiveRef.current && phaseRef.current === "idle") {
+            startListening();
+          }
+        }, 400);
+      }
+    };
     rec.onerror = (ev) => {
-      setListening(false);
-      if (ev?.error && ev.error !== "no-speech" && ev.error !== "aborted") {
-        setError(`mic error: ${ev.error}`);
+      setPhase("idle");
+      const err = ev?.error;
+      if (err && err !== "no-speech" && err !== "aborted") {
+        setError(`mic error: ${err}`);
+        setConversationActive(false);
       }
     };
     recognitionRef.current = rec;
     return () => {
       try {
-        rec.stop();
+        rec.abort();
       } catch {
         /* ignore */
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [send, startListening]);
 
-  // Falls back to the browser's built-in speech engine when ElevenLabs is
-  // unreachable. Intelligible but not Bruno's character voice.
-  function speakLocally(text: string) {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "en-AU";
-      utter.rate = 1.0;
-      utter.pitch = 0.85;
-      const voices = window.speechSynthesis.getVoices();
-      const preferred =
-        voices.find((v) => /en-AU/i.test(v.lang) && /Male|Karen|Lee/i.test(v.name)) ||
-        voices.find((v) => /en-AU/i.test(v.lang)) ||
-        voices.find((v) => /en-GB/i.test(v.lang));
-      if (preferred) utter.voice = preferred;
-      setSpeaking(true);
-      utter.onend = () => setSpeaking(false);
-      utter.onerror = () => setSpeaking(false);
-      window.speechSynthesis.speak(utter);
-    } catch {
-      setSpeaking(false);
-    }
-  }
-
-  async function playTts(text: string): Promise<string | null> {
-    try {
-      const res = await fetch("/api/playground/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        const reason = j.error ?? String(res.status);
-        setError(`ElevenLabs unreachable (${reason}). Using browser voice fallback.`);
-        speakLocally(text);
-        return null;
-      }
-      const costHeader = res.headers.get("X-Cost-Usd");
-      const cost = costHeader ? Number(costHeader) : (text.length / 1000) * ELEVENLABS_PRICE_PER_1K_CHARS;
-      setStats((s) => ({
-        ...s,
-        voiceCost: Number((s.voiceCost + (isFinite(cost) ? cost : 0)).toFixed(6)),
-        voiceChars: s.voiceChars + text.length,
-      }));
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      if (audioRef.current) {
-        audioRef.current.src = url;
-        setSpeaking(true);
-        audioRef.current.onended = () => setSpeaking(false);
-        audioRef.current.onerror = () => setSpeaking(false);
-        try {
-          await audioRef.current.play();
-        } catch {
-          // Autoplay blocked. User will see the <audio> controls instead.
-          setSpeaking(false);
-        }
-      }
-      return url;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "tts failed");
-      speakLocally(text);
-      return null;
-    }
-  }
-
-  async function send(overrideText?: string) {
-    const text = (overrideText ?? draft).trim();
-    if (!text || loading) return;
+  // --- Conversation control -----------------------------------------------
+  function startConversation() {
+    if (!recognitionRef.current || characterDroppedRef.current) return;
     setError(null);
-    setDraft("");
-    const nextHistory = [...historyRef.current, { role: "user", content: text } as Turn];
-    setHistory(nextHistory);
-    setLoading(true);
-    try {
-      const res = await fetch("/api/playground/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          history: historyRef.current.map((t) => ({ role: t.role, content: t.content })),
-          userMessage: text,
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        setError(json.error ?? "failed");
-        return;
-      }
-      const reply = (json.text as string) ?? "(no reply)";
-      let audioUrl: string | undefined;
-      if (voiceMode && reply) {
-        const url = await playTts(reply);
-        if (url) audioUrl = url;
-      }
-      setHistory((prev) => [...prev, { role: "assistant", content: reply, audioUrl }]);
-      setStats((s) => ({
-        ...s,
-        brainCost: Number((s.brainCost + (json.costUsd ?? 0)).toFixed(6)),
-        totalInputTokens: s.totalInputTokens + (json.inputTokens ?? 0),
-        totalOutputTokens: s.totalOutputTokens + (json.outputTokens ?? 0),
-        lastLatencyMs: json.latencyMs ?? 0,
-      }));
-      if (json.shouldEndCharacter) setCharacterDropped(true);
-    } finally {
-      setLoading(false);
-    }
+    setConversationActive(true);
+    startListening();
   }
 
-  function toggleMic() {
-    if (!recognitionRef.current || characterDropped) return;
-    if (listening) {
-      recognitionRef.current.stop();
-      return;
+  function stopConversation() {
+    setConversationActive(false);
+    conversationActiveRef.current = false;
+    stopListening();
+    if (audioRef.current) {
+      audioRef.current.pause();
     }
-    try {
-      setError(null);
-      recognitionRef.current.start();
-      setListening(true);
-    } catch {
-      // already started, ignore
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
     }
+    setPhase("idle");
   }
 
   function reset() {
+    stopConversation();
     setHistory([]);
     historyRef.current = [];
     setCharacterDropped(false);
@@ -250,11 +368,21 @@ export default function PlaygroundPage() {
       lastLatencyMs: 0,
     });
     setError(null);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = "";
-    }
   }
+
+  const phaseLabel: Record<Phase, string> = {
+    idle: "Idle",
+    listening: "Listening…",
+    thinking: "Bruno is thinking…",
+    speaking: "Bruno is speaking…",
+  };
+  const phaseColor: Record<Phase, string> = {
+    idle: "text-slate-400",
+    listening: "text-rose-300",
+    thinking: "text-amber-300",
+    speaking: "text-cyan-300",
+  };
+  const thinking = phase === "thinking";
 
   return (
     <main className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-3xl flex-col gap-4 px-4 py-6 sm:px-6">
@@ -262,7 +390,8 @@ export default function PlaygroundPage() {
         <div>
           <h1 className="text-lg font-semibold text-white">🔧 Bruno Papadopoulos</h1>
           <p className="text-xs text-slate-400">
-            Local playground. Voice mode uses your browser mic + ElevenLabs for audio replies.
+            Hit <span className="font-semibold text-white">Start talking</span> to have a real
+            back-and-forth. Bruno listens, thinks, speaks, then opens the mic again.
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs text-slate-400">
@@ -272,11 +401,13 @@ export default function PlaygroundPage() {
               checked={voiceMode}
               onChange={(e) => setVoiceMode(e.target.checked)}
               className="h-4 w-4 accent-cyan-400"
+              disabled={conversationActive}
             />
             Voice mode
           </label>
           <span className="hidden sm:inline">
-            brain ${stats.brainCost.toFixed(4)} · voice ${stats.voiceCost.toFixed(4)} ({stats.voiceChars}ch)
+            brain ${stats.brainCost.toFixed(4)} · voice ${stats.voiceCost.toFixed(4)} (
+            {stats.voiceChars}ch)
             {stats.lastLatencyMs ? ` · ${stats.lastLatencyMs}ms` : ""}
           </span>
           <button
@@ -305,13 +436,13 @@ export default function PlaygroundPage() {
         {history.length === 0 ? (
           <p className="text-sm text-slate-500">
             {voiceMode
-              ? "Tap the 🎤 and say something. Bruno will reply out loud."
-              : "Start the conversation. Try \"mate is this the tyre shop\"."}
+              ? "Click Start talking and just speak. Pause when you're done and Bruno will reply."
+              : 'Type something like "mate is this the tyre shop".'}
           </p>
         ) : (
           history.map((t, i) => <Bubble key={i} turn={t} />)
         )}
-        {loading ? (
+        {thinking ? (
           <div className="flex justify-start">
             <div className="rounded-2xl bg-cyan-500/10 px-4 py-2 text-sm text-cyan-200">
               <span className="inline-flex gap-1">
@@ -329,54 +460,85 @@ export default function PlaygroundPage() {
         <p className="rounded-lg bg-rose-500/10 px-3 py-2 text-sm text-rose-200">{error}</p>
       ) : null}
 
-      <div className="flex items-center gap-2">
-        {voiceMode && speechSupported ? (
-          <button
-            type="button"
-            onClick={toggleMic}
-            disabled={loading || characterDropped}
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg transition ${
-              listening
-                ? "bg-rose-500 text-white ring-2 ring-rose-300 ring-offset-2 ring-offset-slate-950"
-                : "bg-cyan-500 text-slate-950 hover:bg-cyan-400"
-            } disabled:opacity-40`}
-            title={listening ? "Stop listening" : "Hold or tap to speak"}
-            aria-label={listening ? "Stop listening" : "Speak"}
-          >
-            {listening ? "■" : "🎤"}
-          </button>
-        ) : null}
-        <form
-          className="flex flex-1 gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            send();
-          }}
+      {voiceMode && speechSupported ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+          <div className="flex items-center gap-3">
+            <PhaseDot phase={phase} />
+            <span className={`text-sm font-medium ${phaseColor[phase]}`}>
+              {phaseLabel[phase]}
+            </span>
+          </div>
+          {conversationActive ? (
+            <button
+              onClick={stopConversation}
+              className="rounded-full bg-rose-500 px-5 py-2 text-sm font-semibold text-white hover:bg-rose-400"
+            >
+              ■ Stop
+            </button>
+          ) : (
+            <button
+              onClick={startConversation}
+              disabled={characterDropped}
+              className="rounded-full bg-cyan-500 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400 disabled:opacity-40"
+            >
+              🎤 Start talking
+            </button>
+          )}
+        </div>
+      ) : null}
+
+      <form
+        className="flex gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void send();
+        }}
+      >
+        <input
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={
+            phase === "listening"
+              ? "Listening…"
+              : phase === "thinking"
+              ? "Bruno is thinking…"
+              : phase === "speaking"
+              ? "Bruno is speaking…"
+              : "Or type like you are the target…"
+          }
+          disabled={
+            phase === "listening" ||
+            phase === "thinking" ||
+            phase === "speaking" ||
+            characterDropped
+          }
+          className="flex-1 rounded-full border border-white/10 bg-slate-950/60 px-4 py-2 text-white placeholder:text-slate-600 disabled:opacity-40"
+        />
+        <button
+          type="submit"
+          disabled={phase !== "idle" || !draft.trim() || characterDropped}
+          className="rounded-full bg-cyan-500 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400 disabled:opacity-40"
         >
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder={listening ? "Listening…" : "Type like you are the target…"}
-            disabled={loading || characterDropped || listening}
-            className="flex-1 rounded-full border border-white/10 bg-slate-950/60 px-4 py-2 text-white placeholder:text-slate-600 disabled:opacity-40"
-            autoFocus
-          />
-          <button
-            type="submit"
-            disabled={loading || !draft.trim() || characterDropped}
-            className="rounded-full bg-cyan-500 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-400 disabled:opacity-40"
-          >
-            Send
-          </button>
-        </form>
-      </div>
+          Send
+        </button>
+      </form>
 
       <audio ref={audioRef} className="hidden" />
-      {speaking ? (
-        <p className="text-center text-xs text-cyan-300/80">Bruno is speaking…</p>
-      ) : null}
     </main>
   );
+}
+
+function PhaseDot({ phase }: { phase: Phase }) {
+  const color =
+    phase === "listening"
+      ? "bg-rose-400"
+      : phase === "thinking"
+      ? "bg-amber-400"
+      : phase === "speaking"
+      ? "bg-cyan-400"
+      : "bg-slate-500";
+  const pulse = phase !== "idle" ? "animate-pulse" : "";
+  return <span className={`h-3 w-3 rounded-full ${color} ${pulse}`} />;
 }
 
 function Bubble({ turn }: { turn: Turn }) {
