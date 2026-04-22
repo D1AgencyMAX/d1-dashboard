@@ -1,55 +1,98 @@
 name: Deploy to Vercel
 
-# Runs only when you've configured Vercel GitHub secrets.
-# If they're missing, the workflow skips cleanly.
+# How to run (once):
+#   1. Open the Actions tab of this repo on GitHub
+#   2. Left sidebar -> "Deploy to Vercel"
+#   3. "Run workflow" button (top right)
+#   4. Paste your tokens in the four input boxes
+#   5. Click the green "Run workflow"
 #
-# Required secrets (Settings -> Secrets -> Actions):
-#   VERCEL_TOKEN            - from vercel.com/account/tokens
-#   VERCEL_ORG_ID           - from Vercel project Settings -> General
-#   VERCEL_PROJECT_ID       - from Vercel project Settings -> General
-#
-# Optional: connect the repo through Vercel's GitHub App instead and
-# this workflow becomes redundant. Keep it as a fallback for branches
-# the GitHub App doesn't cover or for manual re-deploys.
+# After the first successful run Vercel auto-deploys on every push to this
+# branch through its own GitHub App integration — you won't need to run
+# this workflow again unless you want a one-shot redeploy.
 
 on:
-  push:
-    branches:
-      - main
-      - "claude/**"
   workflow_dispatch:
+    inputs:
+      vercel_token:
+        description: "Vercel API token (vcp_...). Required."
+        required: true
+        type: string
+      anthropic_api_key:
+        description: "Anthropic API key (sk-ant-...). Required for the character brain."
+        required: true
+        type: string
+      elevenlabs_api_key:
+        description: "ElevenLabs API key (sk_...). Required for Bruno's voice."
+        required: true
+        type: string
+      production:
+        description: "Deploy to production (unchecked = preview URL)"
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   deploy:
-    if: ${{ vars.VERCEL_ENABLED == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ inputs.vercel_token }}
+      APP_ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+      APP_ELEVENLABS_API_KEY: ${{ inputs.elevenlabs_api_key }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
-      - name: Pull Vercel project settings
-        run: vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
-
-      - name: Build
-        run: vercel build --token=$VERCEL_TOKEN
-
-      - name: Deploy preview (non-main branches)
-        if: github.ref != 'refs/heads/main'
-        run: vercel deploy --prebuilt --token=$VERCEL_TOKEN
-
-      - name: Deploy production (main branch only)
-        if: github.ref == 'refs/heads/main'
+      - name: Deploy
+        id: deploy
         run: |
-          vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-          vercel build --prod --token=$VERCEL_TOKEN
-          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+          set -e
+          PROD_FLAG=""
+          if [ "${{ inputs.production }}" = "true" ]; then
+            PROD_FLAG="--prod"
+          fi
+          URL=$(vercel deploy \
+            $PROD_FLAG \
+            --yes \
+            --token="$VERCEL_TOKEN" \
+            --build-env "NEXT_PUBLIC_SUPABASE_URL=https://stub.supabase.co" \
+            --build-env "NEXT_PUBLIC_SUPABASE_ANON_KEY=stub" \
+            --env "NEXT_PUBLIC_SUPABASE_URL=https://stub.supabase.co" \
+            --env "NEXT_PUBLIC_SUPABASE_ANON_KEY=stub" \
+            --env "ANTHROPIC_API_KEY=$APP_ANTHROPIC_API_KEY" \
+            --env "ELEVENLABS_API_KEY=$APP_ELEVENLABS_API_KEY" \
+            2>&1 | tee /tmp/vercel.log | tail -1)
+          echo "---- full CLI output ----"
+          cat /tmp/vercel.log
+          echo "---- url ----"
+          echo "$URL"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "$URL" > DEPLOY_URL.txt
+
+      - name: Commit deploy URL to the branch
+        run: |
+          git config user.name "vercel-deploy-bot"
+          git config user.email "deploy@noreply.local"
+          git add DEPLOY_URL.txt
+          if git diff --cached --quiet; then
+            echo "No change to DEPLOY_URL.txt"
+            exit 0
+          fi
+          git commit -m "deploy: ${{ steps.deploy.outputs.url }} [skip ci]"
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Summary
+        run: |
+          echo "## Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
