@@ -61,6 +61,13 @@ export default function PlaygroundPage() {
   }, [history, loading]);
 
   useEffect(() => {
+    // Prime the SpeechSynthesis voices list — some browsers populate it async.
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
     const Ctor = getSpeechRecognition();
     setSpeechSupported(!!Ctor);
     if (!Ctor) return;
@@ -97,6 +104,31 @@ export default function PlaygroundPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Falls back to the browser's built-in speech engine when ElevenLabs is
+  // unreachable. Intelligible but not Bruno's character voice.
+  function speakLocally(text: string) {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-AU";
+      utter.rate = 1.0;
+      utter.pitch = 0.85;
+      const voices = window.speechSynthesis.getVoices();
+      const preferred =
+        voices.find((v) => /en-AU/i.test(v.lang) && /Male|Karen|Lee/i.test(v.name)) ||
+        voices.find((v) => /en-AU/i.test(v.lang)) ||
+        voices.find((v) => /en-GB/i.test(v.lang));
+      if (preferred) utter.voice = preferred;
+      setSpeaking(true);
+      utter.onend = () => setSpeaking(false);
+      utter.onerror = () => setSpeaking(false);
+      window.speechSynthesis.speak(utter);
+    } catch {
+      setSpeaking(false);
+    }
+  }
+
   async function playTts(text: string): Promise<string | null> {
     try {
       const res = await fetch("/api/playground/tts", {
@@ -106,7 +138,11 @@ export default function PlaygroundPage() {
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(`voice failed: ${j.error ?? res.status}`);
+        const reason = j.error ?? String(res.status);
+        // ElevenLabs unreachable (common in sandboxed/allow-listed environments).
+        // Fall back to the browser's built-in voice so the demo still speaks.
+        setError(`ElevenLabs unreachable (${reason}). Using browser voice fallback.`);
+        speakLocally(text);
         return null;
       }
       const blob = await res.blob();
@@ -126,6 +162,7 @@ export default function PlaygroundPage() {
       return url;
     } catch (err) {
       setError(err instanceof Error ? err.message : "tts failed");
+      speakLocally(text);
       return null;
     }
   }
