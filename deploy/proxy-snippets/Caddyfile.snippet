@@ -1,0 +1,17 @@
+# Append this block to your existing Caddyfile (or add it as a new site
+# block in /etc/caddy/Caddyfile). Caddy fetches the cert automatically on
+# first request.
+#
+#   caddy validate --config /etc/caddy/Caddyfile
+#   systemctl reload caddy       # or: docker exec <caddy> caddy reload
+
+comedian.your-host.example {
+    encode zstd gzip
+
+    reverse_proxy 127.0.0.1:3100 {
+        header_up Host              {host}
+        header_up X-Real-IP         {remote_host}
+        header_up X-Forwarded-For   {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

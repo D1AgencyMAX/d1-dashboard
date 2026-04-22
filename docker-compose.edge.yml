@@ -1,0 +1,33 @@
+# Optional overlay: adds Caddy for automatic HTTPS on :80/:443. Only use
+# this if no other reverse proxy owns those ports. With this file the app
+# is reachable via ${APP_HOSTNAME} with a real Let's Encrypt cert.
+#
+# Start with:
+#   docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+
+services:
+  app:
+    # When Caddy is fronting us we don't need to publish the host port at all.
+    ports: !reset []
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: comedian-caddy
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      APP_HOSTNAME: ${APP_HOSTNAME}
+    networks:
+      - edge
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,40 @@
+# Default stack: app-only, bound to localhost so it never collides with
+# anything already running on :80/:443. Use this on VPS 1 where VoxReach
+# already owns the edge — then proxy to 127.0.0.1:${APP_PORT:-3100} from
+# the existing Caddy/nginx.
+#
+# For a greenfield VPS that needs its own HTTPS edge, layer on Caddy with:
+#   docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d --build
+#
+# Start: docker compose up -d --build
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    container_name: comedian-app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      WHATSAPP_GRAPH_VERSION: ${WHATSAPP_GRAPH_VERSION:-v21.0}
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET}
+    ports:
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3100}:3000"
+    networks:
+      - edge
+
+networks:
+  edge:

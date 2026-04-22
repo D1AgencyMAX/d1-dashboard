@@ -1,0 +1,46 @@
+# Drop into /etc/nginx/sites-available/comedian.conf, then:
+#   ln -s /etc/nginx/sites-available/comedian.conf /etc/nginx/sites-enabled/
+#   nginx -t && systemctl reload nginx
+#
+# Assumes you already have HTTPS set up for this hostname (certbot, etc.).
+# If not, certbot --nginx -d comedian.your-host.example will add the
+# ssl_* lines for you after it fetches a cert.
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name comedian.your-host.example;
+    # Uncomment once you have a cert:
+    # return 301 https://$host$request_uri;
+
+    # Meta sends webhook traffic to /api/whatsapp/webhook. Next uses /_next
+    # for assets. Everything else is app routes.
+    location / {
+        proxy_pass http://127.0.0.1:3100;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        "upgrade";
+
+        # Webhook POSTs can carry a few hundred KB of media metadata.
+        client_max_body_size 25m;
+
+        # Next.js streaming responses benefit from slightly longer timeouts.
+        proxy_read_timeout 120s;
+        proxy_send_timeout 120s;
+    }
+}
+
+# server {
+#     listen 443 ssl http2;
+#     listen [::]:443 ssl http2;
+#     server_name comedian.your-host.example;
+#
+#     ssl_certificate     /etc/letsencrypt/live/comedian.your-host.example/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/comedian.your-host.example/privkey.pem;
+#
+#     location / { ... same proxy_pass block as above ... }
+# }
