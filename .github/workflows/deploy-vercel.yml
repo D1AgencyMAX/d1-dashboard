@@ -4,12 +4,11 @@ name: Deploy to Vercel
 #   1. Open the Actions tab of this repo on GitHub
 #   2. Left sidebar -> "Deploy to Vercel"
 #   3. "Run workflow" button (top right)
-#   4. Paste your tokens in the four input boxes
-#   5. Click the green "Run workflow"
+#   4. Paste your tokens in the input boxes
+#   5. Pick the feature branch, click green "Run workflow"
 #
-# After the first successful run Vercel auto-deploys on every push to this
-# branch through its own GitHub App integration — you won't need to run
-# this workflow again unless you want a one-shot redeploy.
+# The "Run workflow" button only appears when the workflow file exists on
+# the default branch; that is why this file lives on main too.
 
 on:
   workflow_dispatch:
