@@ -66,23 +66,30 @@ export type SynthesizeResult = {
 // Using a conservative estimate for the dashboard cost column.
 const ELEVENLABS_PRICE_PER_1K_CHARS = 0.3;
 
+// WhatsApp needs OGG Opus; browser <audio> is happier with MP3.
+export type TtsFormat = "ogg" | "mp3";
+
 export async function synthesizeSpeech(
   text: string,
   voiceId: string,
+  format: TtsFormat = "ogg",
 ): Promise<SynthesizeResult> {
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) throw new Error("ELEVENLABS_API_KEY not set");
   if (!voiceId) throw new Error("voiceId not provided");
 
-  // WhatsApp voice notes need OGG Opus. ElevenLabs supports this via output_format.
+  const outputFormat = format === "mp3" ? "mp3_44100_128" : "ogg_opus_48000";
+  const mimeType = format === "mp3" ? "audio/mpeg" : "audio/ogg";
+  const acceptHeader = format === "mp3" ? "audio/mpeg" : "audio/ogg";
+
   const res = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=ogg_opus_48000`,
+    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=${outputFormat}`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "xi-api-key": apiKey,
-        Accept: "audio/ogg",
+        Accept: acceptHeader,
       },
       body: JSON.stringify({
         text,
@@ -98,7 +105,7 @@ export async function synthesizeSpeech(
   const buf = new Uint8Array(await res.arrayBuffer());
   return {
     bytes: buf,
-    mimeType: "audio/ogg",
+    mimeType,
     costUsd: Number(((text.length / 1000) * ELEVENLABS_PRICE_PER_1K_CHARS).toFixed(6)),
   };
 }
