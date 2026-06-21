@@ -76,7 +76,7 @@
     margin-bottom: 6px;
   }
   .section-kicker { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: .2em; color: var(--cyan); margin-bottom: 12px; }
-  .section-lead { font-size: 11.5pt; color: var(--muted); margin-bottom: 26px; max-width: 60ch; }
+  .section-lead { font-size: 11.5pt; color: var(--muted); margin-bottom: 18px; max-width: 60ch; }
 
   h3 { font-size: 12.5pt; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; margin-bottom: 4px; }
   p { margin-bottom: 13px; }
@@ -84,7 +84,7 @@
   strong { color: var(--ink); font-weight: 600; }
   a { color: var(--cyan); text-decoration: none; }
 
-  .content { padding-top: 8mm; }
+  .content { padding-top: 5mm; }
 
   /* ============================================================= */
   /* COVER                                                          */
@@ -133,6 +133,14 @@
   .t-era { font-size: 8pt; text-transform: uppercase; letter-spacing: .16em; color: var(--cyan); font-weight: 700; margin-bottom: 3px; }
   .t-item p { font-size: 10.5pt; margin: 0; color: var(--body); }
 
+  /* dense variant for the longer career timeline */
+  .timeline.dense .t-item { padding-bottom: 9px; }
+  .timeline.dense .t-item h3 { font-size: 11.5pt; }
+  .timeline.dense .t-item p { font-size: 9.5pt; line-height: 1.4; }
+  .timeline.dense .t-era { font-size: 7.5pt; }
+  .timeline.dense .t-item::before { top: 3px; width: 11px; height: 11px; }
+  .timeline.dense .t-item.now::before { background: var(--cyan); }
+
   /* ============================================================= */
   /* CARDS                                                          */
   /* ============================================================= */
@@ -160,19 +168,19 @@
   /* ============================================================= */
   /* STEPS                                                          */
   /* ============================================================= */
-  .steps { display: grid; gap: 12px; }
-  .step { display: flex; gap: 16px; align-items: flex-start; border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; background: #fff; }
+  .steps { display: grid; gap: 10px; }
+  .step { display: flex; gap: 16px; align-items: flex-start; border: 1px solid var(--line); border-radius: 12px; padding: 13px 18px; background: #fff; }
   .step .n { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--cyan); color: #fff; font-weight: 700; font-size: 11pt; display: flex; align-items: center; justify-content: center; }
   .step h3 { font-size: 11.5pt; margin-bottom: 2px; }
   .step p { margin: 0; font-size: 10pt; }
 
   /* why choose us */
   ul.reasons { list-style: none; margin-top: 4px; }
-  ul.reasons li { position: relative; padding: 0 0 12px 24px; font-size: 10.5pt; color: var(--body); }
+  ul.reasons li { position: relative; padding: 0 0 9px 24px; font-size: 10.5pt; color: var(--body); }
   ul.reasons li:last-child { padding-bottom: 0; }
   ul.reasons li::before { content: ""; position: absolute; left: 3px; top: 8px; width: 9px; height: 9px; border-radius: 3px; background: var(--cyan); }
 
-  .divider { height: 1px; background: var(--line); margin: 26px 0; }
+  .divider { height: 1px; background: var(--line); margin: 16px 0; }
 
   /* ============================================================= */
   /* CLOSING PAGE                                                   */
@@ -212,17 +220,17 @@
     <p class="eyebrow">A prospectus for CEOs &amp; boards</p>
     <h1>Three decades of building, breaking and <span class="accent">scaling technology.</span></h1>
     <p class="cover-lede wide">
-      How to lead technology without betting the company on a single permanent hire — what 27 years of
-      owning hardware, software, telecom and finance businesses brings to your roadmap, your margins and
-      your risk.
+      From building PCs and configuring networks at sixteen to selling software into Silicon Valley —
+      what nearly three decades across hardware, internet, software and mobile brings to your roadmap,
+      your margins and your risk.
     </p>
   </div>
 
   <div class="stat-band">
-    <div class="stat"><div class="n">27</div><div class="l">Years owning &amp; operating technology businesses</div></div>
-    <div class="stat"><div class="n">5+</div><div class="l">Industries: hardware, software, ISP, finance, agency</div></div>
-    <div class="stat"><div class="n">P&amp;L</div><div class="l">Founder-level ownership, not just a job title</div></div>
-    <div class="stat"><div class="n">0</div><div class="l">Months of ramp-up before value lands</div></div>
+    <div class="stat"><div class="n">27</div><div class="l">Years across hardware, internet, software &amp; mobile</div></div>
+    <div class="stat"><div class="n">16,000</div><div class="l">Customers scaled on a self-built ISP</div></div>
+    <div class="stat"><div class="n">1997</div><div class="l">In IT since Year 10 — building &amp; networking PCs</div></div>
+    <div class="stat"><div class="n">USA</div><div class="l">Software solutions sold into Silicon Valley</div></div>
   </div>
 
   <div class="cover-foot">
@@ -266,33 +274,48 @@
   <div class="content">
     <p class="section-kicker">02 — Track record</p>
     <h2 class="section">An operator, not a CV of job titles</h2>
-    <p class="section-lead">For 27 years I have owned the companies, carried the risk and lived with the outcomes. The breadth matters because modern technology decisions cut across all of it at once.</p>
+    <p class="section-lead">Hands-on at the leading edge of every major shift since 1997 — building it, running it, scaling it and selling it across Australia and into the US. An early adopter, every time.</p>
 
-    <div class="timeline">
+    <div class="timeline dense">
       <div class="t-item">
-        <div class="t-era">Hardware</div>
-        <h3>Built and ran hardware businesses</h3>
-        <p>Sourcing, supply chains, margins on physical goods, support and RMA, and the cash-flow discipline that selling tangible product demands. I know what it costs to ship something real.</p>
+        <div class="t-era">1997 · Year 10</div>
+        <h3>Started in IT at sixteen — still at school</h3>
+        <p>Joined a local PC manufacturer building machines and setting up early business networks, alongside a Diploma in IT completed with Years 11 &amp; 12 by the end of 1999.</p>
       </div>
       <div class="t-item">
-        <div class="t-era">Software</div>
-        <h3>Owned software companies end to end</h3>
-        <p>Product strategy, build vs. buy, release cycles, technical debt and the day-to-day reality of shipping software people pay for — from spec to support desk.</p>
+        <div class="t-era">1999 · Software</div>
+        <h3>Began custom software development in C#</h3>
+        <p>An early adopter of .NET-era tooling — building bespoke business solutions from the ground up as the platform itself was emerging.</p>
       </div>
       <div class="t-item">
-        <div class="t-era">Telecommunications</div>
-        <h3>Operated Internet Service Providers</h3>
-        <p>Networks, uptime, scale, peering and infrastructure under real load. When you've run an ISP, "the cloud" holds no mystery — it's just someone else's data centre with a markup.</p>
+        <div class="t-era">Early 2000s · Telecom</div>
+        <h3>Built an ISP from scratch — scaled to 16,000 customers</h3>
+        <p>Founded an Internet Service Provider and grew it through the early 2000s. Running a network at that scale means the cloud holds no mystery — it's just someone else's data centre with a markup.</p>
       </div>
       <div class="t-item">
-        <div class="t-era">Finance</div>
-        <h3>Founded and ran finance companies</h3>
-        <p>Lending, risk, compliance, regulation and the unit economics of money itself. I read a balance sheet the way most CTOs read a stack trace — and connect technology decisions to it.</p>
+        <div class="t-era">Early 2000s · Government</div>
+        <h3>Critical infrastructure for government, NSW &amp; QLD</h3>
+        <p>Managed critical infrastructure on contracts for councils and government departments — on-site server builds with full hardware and software support.</p>
       </div>
       <div class="t-item">
-        <div class="t-era">Today · Digital One Agency</div>
-        <h3>Turning all of it into outcomes for clients</h3>
-        <p>That combined experience now runs through Digital One Agency — operator-grade technology leadership for growth businesses that need the judgement without the overhead.</p>
+        <div class="t-era">Mid 2000s · Scale</div>
+        <h3>Scaling software &amp; systems Australia-wide</h3>
+        <p>Designed, built and scaled technology for businesses right across the country — and the hardware needed to grow with them.</p>
+      </div>
+      <div class="t-item">
+        <div class="t-era">2008 · Mobile</div>
+        <h3>Mobile apps before the smartphone</h3>
+        <p>Building for Nokia and BlackBerry operating systems years ahead of the App Store — at the front of the mobile wave before it broke.</p>
+      </div>
+      <div class="t-item">
+        <div class="t-era">Late 2000s · Silicon Valley</div>
+        <h3>Selling software into the USA</h3>
+        <p>Designed and developed software for American start-ups and sold solutions to Silicon Valley companies.</p>
+      </div>
+      <div class="t-item now">
+        <div class="t-era">Today · Digital One Agency &amp; AI</div>
+        <h3>Still first to the frontier — now in AI</h3>
+        <p>The same early-adopter instinct, applied to artificial intelligence and automation — turning 27 years of operating into fractional CTO leadership for growth businesses.</p>
       </div>
     </div>
   </div>
@@ -383,6 +406,7 @@
       <li><strong>Unusual breadth.</strong> Hardware, software, networks and finance in one operator — so cross-cutting calls are made by someone who's lived every side.</li>
       <li><strong>Plain English.</strong> I translate between the engineering room and the boardroom without losing either side.</li>
       <li><strong>No empire-building.</strong> I'll tell you when you <em>don't</em> need to spend, hire or build. Few full-time CTOs are incentivised to.</li>
+      <li><strong>Early to every shift.</strong> First to networking, the web, mobile and now AI — I help you adopt what matters early and ignore what's just noise.</li>
     </ul>
   </div>
   <div class="runfoot"><span>Digital One Agency</span><span>6</span></div>
