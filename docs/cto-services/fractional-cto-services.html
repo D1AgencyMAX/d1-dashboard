@@ -6,402 +6,408 @@
 <title>Fractional CTO Services — Digital One Agency</title>
 <style>
   :root {
-    --ink: #0f172a;          /* slate-900 headings */
-    --body: #334155;         /* slate-700 body */
-    --muted: #64748b;        /* slate-500 */
-    --line: #e2e8f0;         /* slate-200 borders */
-    --line-soft: #eef2f7;
-    --panel: #f8fafc;        /* slate-50 panels */
-    --cyan: #0891b2;         /* cyan-600 accent (readable on white) */
+    --ink: #0f172a;
+    --body: #3f4b5e;
+    --muted: #64748b;
+    --faint: #94a3b8;
+    --line: #e6eaf0;
+    --line-soft: #f0f3f7;
+    --panel: #f8fafc;
+    --cyan: #0891b2;
     --cyan-bright: #06b6d4;
-    --cyan-soft: #ecfeff;    /* cyan-50 */
-    --cyan-border: #a5f3fc;  /* cyan-200 */
-    --navy: #0b1220;
+    --cyan-soft: #ecfeff;
+    --cyan-border: #bae6fd;
+    --navy: #0b1120;
   }
 
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page { size: A4; margin: 0; }
+
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   body {
-    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     color: var(--body);
-    background: #ffffff;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    line-height: 1.62;
+    background: #525866;
+    font-size: 11pt;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
-    font-size: 16px;
   }
 
-  ::selection { background: rgba(8, 145, 178, 0.18); }
-
-  .wrap { max-width: 860px; margin: 0 auto; padding: 0 36px 80px; }
-
-  /* ---------- Masthead ---------- */
-  .masthead {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 28px 0 22px;
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 56px;
-  }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .brand .mark {
-    width: 30px; height: 30px; border-radius: 8px;
-    background: linear-gradient(135deg, var(--cyan-bright), var(--cyan));
-    box-shadow: 0 4px 12px rgba(8,145,178,0.25);
-  }
-  .brand .name { font-weight: 700; color: var(--ink); font-size: 16px; letter-spacing: -0.01em; }
-  .masthead .meta { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.16em; }
-
-  /* ---------- Hero ---------- */
-  .eyebrow {
-    font-size: 12px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.22em; color: var(--cyan); margin: 0 0 18px;
-  }
-  h1 {
-    font-size: 42px; line-height: 1.08; font-weight: 700;
-    margin: 0 0 20px; letter-spacing: -0.025em; color: var(--ink);
-  }
-  h1 .accent { color: var(--cyan); }
-  .lede { font-size: 19px; color: var(--muted); max-width: 62ch; margin: 0 0 8px; line-height: 1.55; }
-
-  /* ---------- Stat band ---------- */
-  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 40px 0 8px; }
-  .stat { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 20px 18px; }
-  .stat .num { font-size: 30px; font-weight: 800; color: var(--cyan); letter-spacing: -0.02em; line-height: 1; }
-  .stat .label { font-size: 12.5px; color: var(--muted); margin-top: 9px; line-height: 1.4; }
-
-  /* ---------- Section headings ---------- */
-  h2 {
-    font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em;
-    color: var(--cyan); margin: 64px 0 22px; padding-bottom: 14px;
-    border-bottom: 1px solid var(--line);
-    display: flex; align-items: center; gap: 12px;
-  }
-  h2::before { content: ""; width: 22px; height: 3px; border-radius: 2px; background: var(--cyan); flex: none; }
-
-  h3 { font-size: 18px; font-weight: 700; margin: 0 0 6px; color: var(--ink); letter-spacing: -0.01em; }
-  p { margin: 0 0 16px; color: var(--body); }
-  a { color: var(--cyan); text-decoration: none; }
-  strong { color: var(--ink); font-weight: 600; }
-
-  .section-intro { font-size: 17px; color: var(--muted); margin-bottom: 26px; }
-
-  /* ---------- Quote ---------- */
-  .quote {
+  /* ---------- Page shell ---------- */
+  .page {
     position: relative;
-    background: var(--cyan-soft);
-    border: 1px solid var(--cyan-border);
-    border-radius: 16px;
-    padding: 26px 30px 26px 30px;
-    margin: 30px 0;
-    font-size: 19px; line-height: 1.5; color: #0e3a44; font-weight: 500;
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: #fff;
+    padding: 24mm 22mm 20mm;
+    overflow: hidden;
+    page-break-after: always;
   }
-  .quote::before {
-    content: "“"; position: absolute; top: 2px; left: 16px;
-    font-size: 56px; color: var(--cyan-border); font-family: Georgia, serif; line-height: 1;
-  }
-  .quote span { display: block; padding-left: 22px; }
+  .page:last-child { page-break-after: auto; }
 
-  /* ---------- Timeline ---------- */
-  .timeline { position: relative; margin: 4px 0 0; padding-left: 30px; }
-  .timeline::before {
-    content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 2px;
-    background: linear-gradient(180deg, var(--cyan), var(--cyan-border));
-  }
-  .t-item { position: relative; padding: 0 0 28px; }
-  .t-item:last-child { padding-bottom: 4px; }
-  .t-item::before {
-    content: ""; position: absolute; left: -29px; top: 5px; width: 12px; height: 12px;
-    border-radius: 50%; background: #fff; border: 2.5px solid var(--cyan);
-  }
-  .t-era { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--cyan); font-weight: 700; }
-  .t-item h3 { margin-top: 5px; }
-  .t-item p { font-size: 15px; margin-bottom: 0; color: var(--body); }
+  /* screen-only spacing between pages */
+  @media screen { .page { margin: 14px auto; box-shadow: 0 8px 30px rgba(0,0,0,.25); } }
 
-  /* ---------- Service cards ---------- */
-  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .card {
-    border: 1px solid var(--line); border-radius: 16px; background: #fff; padding: 24px 22px;
-    box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+  /* ---------- Running furniture ---------- */
+  .runhead {
+    position: absolute; top: 12mm; left: 22mm; right: 22mm;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 8.5pt; letter-spacing: .16em; text-transform: uppercase; color: var(--faint);
+    padding-bottom: 7px; border-bottom: 1px solid var(--line);
   }
-  .card .tag {
-    display: inline-block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em;
-    color: var(--cyan); background: var(--cyan-soft); border: 1px solid var(--cyan-border);
-    border-radius: 999px; padding: 4px 12px; margin-bottom: 14px; font-weight: 600;
-  }
-  .card p { font-size: 14.5px; margin-bottom: 0; color: var(--body); }
+  .runhead .b { display: flex; align-items: center; gap: 7px; color: var(--ink); font-weight: 600; letter-spacing: .04em; white-space: nowrap; }
+  .runhead .dot { width: 13px; height: 13px; border-radius: 4px; background: linear-gradient(135deg, var(--cyan-bright), var(--cyan)); }
 
-  /* ---------- Clean lists ---------- */
-  ul.clean { list-style: none; padding: 0; margin: 0; }
-  ul.clean li { position: relative; padding: 0 0 14px 30px; color: var(--body); font-size: 15.5px; }
-  ul.clean li::before {
-    content: ""; position: absolute; left: 4px; top: 9px; width: 9px; height: 9px;
-    border-radius: 3px; background: var(--cyan);
+  .runfoot {
+    position: absolute; bottom: 12mm; left: 22mm; right: 22mm;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 8.5pt; color: var(--faint);
+    padding-top: 7px; border-top: 1px solid var(--line);
   }
-  ul.clean li:last-child { padding-bottom: 0; }
 
-  /* ---------- Comparison ---------- */
-  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 6px; }
-  .compare .col { border: 1px solid var(--line); border-radius: 16px; padding: 26px 24px; background: #fff; }
+  /* ---------- Typography ---------- */
+  .eyebrow { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: .22em; color: var(--cyan); }
+
+  h2.section {
+    font-size: 19pt; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .section-kicker { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: .2em; color: var(--cyan); margin-bottom: 12px; }
+  .section-lead { font-size: 11.5pt; color: var(--muted); margin-bottom: 26px; max-width: 60ch; }
+
+  h3 { font-size: 12.5pt; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; margin-bottom: 4px; }
+  p { margin-bottom: 13px; }
+  p:last-child { margin-bottom: 0; }
+  strong { color: var(--ink); font-weight: 600; }
+  a { color: var(--cyan); text-decoration: none; }
+
+  .content { padding-top: 8mm; }
+
+  /* ============================================================= */
+  /* COVER                                                          */
+  /* ============================================================= */
+  .cover { display: flex; flex-direction: column; }
+  .cover-top { display: flex; justify-content: space-between; align-items: center; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .cover-brand { display: flex; align-items: center; gap: 11px; }
+  .cover-brand .mark { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--cyan-bright), var(--cyan)); box-shadow: 0 6px 16px rgba(8,145,178,.28); }
+  .cover-brand .nm { font-size: 13pt; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; white-space: nowrap; }
+  .cover-brand .sub { font-size: 8pt; text-transform: uppercase; letter-spacing: .18em; color: var(--faint); }
+  .cover-top .tag { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .16em; color: var(--faint); }
+
+  .cover-hero { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 6mm 0; }
+  .cover-hero .eyebrow { margin-bottom: 20px; }
+  h1 { font-size: 38pt; line-height: 1.04; font-weight: 800; color: var(--ink); letter-spacing: -0.03em; margin-bottom: 22px; }
+  h1 .accent { color: var(--cyan); }
+  .cover-lede { font-size: 13pt; line-height: 1.5; color: var(--muted); max-width: 30ch; }
+  .cover-lede.wide { max-width: 46ch; }
+
+  .stat-band { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-top: 26px; border-top: 1px solid var(--line); }
+  .stat { }
+  .stat .n { font-size: 26pt; font-weight: 800; color: var(--cyan); letter-spacing: -0.03em; line-height: 1; }
+  .stat .l { font-size: 8.5pt; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+
+  .cover-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 18px; margin-top: 22px; border-top: 1px solid var(--line); font-size: 9pt; color: var(--faint); }
+  .cover-foot .who { color: var(--ink); font-weight: 600; }
+
+  /* ============================================================= */
+  /* QUOTE                                                          */
+  /* ============================================================= */
+  .quote {
+    position: relative; background: var(--cyan-soft); border: 1px solid var(--cyan-border);
+    border-radius: 14px; padding: 26px 30px 26px 56px; margin-top: 26px;
+    font-size: 13pt; line-height: 1.5; color: #0e3a44; font-weight: 500;
+  }
+  .quote::before { content: "\201C"; position: absolute; top: 10px; left: 20px; font-size: 46pt; color: var(--cyan-border); font-family: Georgia, serif; line-height: 1; }
+
+  /* ============================================================= */
+  /* TIMELINE                                                       */
+  /* ============================================================= */
+  .timeline { position: relative; padding-left: 30px; }
+  .timeline::before { content: ""; position: absolute; left: 5px; top: 6px; bottom: 6px; width: 2px; background: linear-gradient(180deg, var(--cyan), var(--cyan-border)); }
+  .t-item { position: relative; padding-bottom: 22px; }
+  .t-item:last-child { padding-bottom: 0; }
+  .t-item::before { content: ""; position: absolute; left: -29px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 2.5px solid var(--cyan); }
+  .t-era { font-size: 8pt; text-transform: uppercase; letter-spacing: .16em; color: var(--cyan); font-weight: 700; margin-bottom: 3px; }
+  .t-item p { font-size: 10.5pt; margin: 0; color: var(--body); }
+
+  /* ============================================================= */
+  /* CARDS                                                          */
+  /* ============================================================= */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card { border: 1px solid var(--line); border-radius: 14px; background: #fff; padding: 20px 20px; }
+  .card .tag { display: inline-block; font-size: 7.5pt; text-transform: uppercase; letter-spacing: .14em; color: var(--cyan); background: var(--cyan-soft); border: 1px solid var(--cyan-border); border-radius: 999px; padding: 3px 11px; margin-bottom: 12px; font-weight: 700; }
+  .card p { font-size: 10pt; margin: 0; color: var(--body); }
+
+  /* ============================================================= */
+  /* COMPARISON                                                     */
+  /* ============================================================= */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .compare .col { border: 1px solid var(--line); border-radius: 14px; padding: 24px 22px; background: #fff; }
   .compare .col.frac { background: var(--cyan-soft); border-color: var(--cyan-border); }
-  .compare h3 { font-size: 16px; margin-bottom: 4px; }
-  .compare .price { font-size: 12.5px; color: var(--muted); margin-bottom: 18px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .compare h3 { font-size: 12pt; margin-bottom: 4px; }
+  .compare .price { font-size: 8.5pt; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; letter-spacing: .08em; }
   .compare .col.frac .price { color: var(--cyan); }
-  .compare ul.clean li { font-size: 14px; padding-bottom: 12px; padding-left: 26px; }
-  .compare .col.full ul.clean li::before { background: #cbd5e1; }
+  ul.ticks { list-style: none; }
+  ul.ticks li { position: relative; padding: 0 0 11px 22px; font-size: 10pt; color: var(--body); }
+  ul.ticks li:last-child { padding-bottom: 0; }
+  ul.ticks li::before { content: ""; position: absolute; left: 2px; top: 7px; width: 8px; height: 8px; border-radius: 2px; background: var(--cyan); }
+  .compare .col.full ul.ticks li::before { background: #cbd5e1; }
+  .closing-note { margin-top: 22px; font-size: 11pt; color: var(--body); }
 
-  /* ---------- Steps ---------- */
-  .steps { display: grid; gap: 14px; }
-  .step { display: flex; gap: 18px; align-items: flex-start; border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; background: #fff; }
-  .step .n {
-    flex: none; width: 34px; height: 34px; border-radius: 50%;
-    background: var(--cyan); color: #fff; font-weight: 700; font-size: 15px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .step h3 { font-size: 16px; margin-bottom: 4px; }
-  .step p { margin: 0; font-size: 14.5px; }
+  /* ============================================================= */
+  /* STEPS                                                          */
+  /* ============================================================= */
+  .steps { display: grid; gap: 12px; }
+  .step { display: flex; gap: 16px; align-items: flex-start; border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; background: #fff; }
+  .step .n { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--cyan); color: #fff; font-weight: 700; font-size: 11pt; display: flex; align-items: center; justify-content: center; }
+  .step h3 { font-size: 11.5pt; margin-bottom: 2px; }
+  .step p { margin: 0; font-size: 10pt; }
 
-  /* ---------- CTA ---------- */
-  .cta {
-    margin-top: 66px; border-radius: 20px; padding: 44px 40px; text-align: center;
-    background: var(--navy);
-    color: #e2e8f0;
-  }
-  .cta h2 { border: 0; margin: 0 0 14px; padding: 0; color: #fff; font-size: 26px; letter-spacing: -0.01em; text-transform: none; justify-content: center; }
-  .cta h2::before { display: none; }
-  .cta p { color: #94a3b8; max-width: 54ch; margin: 0 auto 26px; }
-  .btn {
-    display: inline-block; background: var(--cyan-bright); color: #042f33; font-weight: 700;
-    font-size: 15px; padding: 14px 30px; border-radius: 11px;
-  }
-  .contact-row { margin-top: 22px; font-size: 14px; color: #94a3b8; }
-  .contact-row span { color: #fff; font-weight: 600; }
+  /* why choose us */
+  ul.reasons { list-style: none; margin-top: 4px; }
+  ul.reasons li { position: relative; padding: 0 0 12px 24px; font-size: 10.5pt; color: var(--body); }
+  ul.reasons li:last-child { padding-bottom: 0; }
+  ul.reasons li::before { content: ""; position: absolute; left: 3px; top: 8px; width: 9px; height: 9px; border-radius: 3px; background: var(--cyan); }
 
-  footer {
-    margin-top: 44px; padding-top: 22px; border-top: 1px solid var(--line);
-    font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-  }
+  .divider { height: 1px; background: var(--line); margin: 26px 0; }
 
-  @media (max-width: 720px) {
-    .wrap { padding: 0 18px 60px; }
-    h1 { font-size: 31px; }
-    .stat-grid { grid-template-columns: 1fr 1fr; }
-    .cards, .compare { grid-template-columns: 1fr; }
-    .masthead { margin-bottom: 40px; }
-  }
-
-  @media print {
-    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; font-size: 14px; }
-    .wrap { padding: 0 24px; max-width: 100%; }
-    h2 { page-break-after: avoid; margin-top: 40px; }
-    .card, .stat, .t-item, .compare .col, .cta, .step, .quote { page-break-inside: avoid; }
-    .masthead { margin-bottom: 36px; }
-  }
+  /* ============================================================= */
+  /* CLOSING PAGE                                                   */
+  /* ============================================================= */
+  .closing { background: var(--navy); }
+  .closing::before { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 300mm; background: var(--navy); z-index: 0; }
+  .closing > * { position: relative; z-index: 1; }
+  .closing .runhead { color: rgba(255,255,255,.45); border-color: rgba(255,255,255,.12); }
+  .closing .runhead .b { color: #fff; }
+  .closing .runfoot { color: rgba(255,255,255,.45); border-color: rgba(255,255,255,.12); }
+  .closing .inner { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+  .closing .eyebrow { color: var(--cyan-bright); margin-bottom: 18px; }
+  .closing h2 { font-size: 30pt; font-weight: 800; color: #fff; letter-spacing: -0.025em; line-height: 1.08; margin-bottom: 18px; }
+  .closing p { color: #aab4c5; font-size: 12.5pt; max-width: 52ch; margin-bottom: 30px; }
+  .btn { display: inline-block; background: var(--cyan-bright); color: #042f33; font-weight: 700; font-size: 11.5pt; padding: 14px 30px; border-radius: 11px; }
+  .closing .contact { margin-top: 34px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.12); display: flex; gap: 40px; }
+  .closing .contact .item .k { font-size: 8pt; text-transform: uppercase; letter-spacing: .16em; color: rgba(255,255,255,.4); margin-bottom: 4px; }
+  .closing .contact .item .v { font-size: 11pt; color: #fff; font-weight: 600; white-space: nowrap; }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <!-- ============ MASTHEAD ============ -->
-  <div class="masthead">
-    <div class="brand">
+<!-- ================= PAGE 1 · COVER ================= -->
+<section class="page cover">
+  <div class="cover-top">
+    <div class="cover-brand">
       <div class="mark"></div>
-      <div class="name">Digital One Agency</div>
+      <div>
+        <div class="nm">Digital One Agency</div>
+        <div class="sub">Technology Leadership</div>
+      </div>
     </div>
-    <div class="meta">Fractional CTO Services</div>
+    <div class="tag">Fractional CTO Services</div>
   </div>
 
-  <!-- ============ HERO ============ -->
-  <p class="eyebrow">A prospectus for CEOs &amp; boards</p>
-  <h1>Three decades of building, breaking and <span class="accent">scaling technology</span> — on your terms.</h1>
-  <p class="lede">
-    How to lead technology without betting the company on a single permanent hire. This is what 27 years
-    of owning and running technology, telecom and finance businesses buys you — applied to your roadmap,
-    your margins and your risk.
-  </p>
-
-  <div class="stat-grid">
-    <div class="stat"><div class="num">27</div><div class="label">Years owning &amp; operating technology businesses</div></div>
-    <div class="stat"><div class="num">5+</div><div class="label">Industries built in: hardware, software, ISP, finance, agency</div></div>
-    <div class="stat"><div class="num">P&amp;L</div><div class="label">Founder-level ownership, not just a job title</div></div>
-    <div class="stat"><div class="num">0</div><div class="label">Months of ramp-up before value lands</div></div>
+  <div class="cover-hero">
+    <p class="eyebrow">A prospectus for CEOs &amp; boards</p>
+    <h1>Three decades of building, breaking and <span class="accent">scaling technology.</span></h1>
+    <p class="cover-lede wide">
+      How to lead technology without betting the company on a single permanent hire — what 27 years of
+      owning hardware, software, telecom and finance businesses brings to your roadmap, your margins and
+      your risk.
+    </p>
   </div>
 
-  <!-- ============ WHY THIS DOCUMENT ============ -->
-  <h2>Why a CEO should read this</h2>
-  <p>
-    You don't have a technology problem. You have a <strong>decision-making</strong> problem with technology
-    at the centre of it — which platform to bet on, what to build versus buy, where the next dollar of
-    margin hides, and whether the team you have can take you where the board wants to go.
-  </p>
-  <p>
-    Most companies answer that by hiring an expensive full-time CTO, or by leaving the call to whoever
-    shouts loudest in the engineering room. There is a third option that more boards are choosing: bring
-    in someone who has already owned the whole problem — the building, the billing, the infrastructure,
-    the financing and the exit — and rent the judgement, not the headcount.
-  </p>
-
-  <div class="quote">
-    <span>I've signed the front of the cheques and the back of them. I've built the product, run the network
-    it rode on, and financed the customers who bought it. There aren't many technology decisions I'm seeing
-    for the first time.</span>
+  <div class="stat-band">
+    <div class="stat"><div class="n">27</div><div class="l">Years owning &amp; operating technology businesses</div></div>
+    <div class="stat"><div class="n">5+</div><div class="l">Industries: hardware, software, ISP, finance, agency</div></div>
+    <div class="stat"><div class="n">P&amp;L</div><div class="l">Founder-level ownership, not just a job title</div></div>
+    <div class="stat"><div class="n">0</div><div class="l">Months of ramp-up before value lands</div></div>
   </div>
 
-  <!-- ============ TRACK RECORD ============ -->
-  <h2>An operator's track record</h2>
-  <p class="section-intro">Not a résumé of job titles. For 27 years I have owned the companies, carried the risk and lived with the outcomes — and modern technology decisions cut across all of it at once.</p>
+  <div class="cover-foot">
+    <span class="who">Ken &nbsp;·&nbsp; Digital One Agency</span>
+    <span>Confidential · Prepared for prospective clients</span>
+  </div>
+</section>
 
-  <div class="timeline">
-    <div class="t-item">
-      <div class="t-era">Hardware</div>
-      <h3>Built and ran hardware businesses</h3>
-      <p>Sourcing, supply chains, margins on physical goods, support and RMA, and the brutal cash-flow
-      discipline that selling tangible product demands. I know what it costs to ship something real.</p>
-    </div>
-    <div class="t-item">
-      <div class="t-era">Software</div>
-      <h3>Owned software companies end to end</h3>
-      <p>Product strategy, build vs. buy, release cycles, technical debt and the day-to-day reality of
-      shipping software people pay for — from spec to support desk.</p>
-    </div>
-    <div class="t-item">
-      <div class="t-era">Telecommunications</div>
-      <h3>Operated Internet Service Providers</h3>
-      <p>Networks, uptime, scale, peering and infrastructure under real load. When you've run an ISP,
-      "the cloud" holds no mystery — it's just someone else's data centre with a markup.</p>
-    </div>
-    <div class="t-item">
-      <div class="t-era">Finance</div>
-      <h3>Founded and ran finance companies</h3>
-      <p>Lending, risk, compliance, regulation and the unit economics of money itself. I read a balance
-      sheet the way most CTOs read a stack trace — and I connect technology decisions to it.</p>
-    </div>
-    <div class="t-item">
-      <div class="t-era">Today · Digital One Agency</div>
-      <h3>Turning all of it into outcomes for clients</h3>
-      <p>Today that combined experience runs through Digital One Agency — applying operator-grade
-      technology leadership to growth businesses that need the judgement without the overhead.</p>
+<!-- ================= PAGE 2 · WHY READ ================= -->
+<section class="page">
+  <div class="runhead"><span class="b"><span class="dot"></span>Digital One Agency</span><span>Fractional CTO Services</span></div>
+  <div class="content">
+    <p class="section-kicker">01 — The case</p>
+    <h2 class="section">Why a CEO should read this</h2>
+    <p class="section-lead">The real bottleneck is rarely the technology itself — it's who is making the calls.</p>
+
+    <p>
+      You don't have a technology problem. You have a <strong>decision-making</strong> problem with
+      technology at the centre of it — which platform to bet on, what to build versus buy, where the next
+      dollar of margin hides, and whether the team you have can take you where the board wants to go.
+    </p>
+    <p>
+      Most companies answer that by hiring an expensive full-time CTO, or by leaving the call to whoever
+      shouts loudest in the engineering room. There is a third option that more boards are choosing: bring
+      in someone who has already owned the whole problem — the building, the billing, the infrastructure,
+      the financing and the exit — and rent the judgement, not the headcount.
+    </p>
+
+    <div class="quote">
+      I've signed the front of the cheques and the back of them. I've built the product, run the network it
+      rode on, and financed the customers who bought it. There aren't many technology decisions I'm seeing
+      for the first time.
     </div>
   </div>
+  <div class="runfoot"><span>Digital One Agency</span><span>2</span></div>
+</section>
 
-  <!-- ============ WHAT YOU GET ============ -->
-  <h2>What an engagement delivers</h2>
-  <div class="cards">
-    <div class="card">
-      <span class="tag">Strategy</span>
-      <h3>Roadmap tied to the P&amp;L</h3>
-      <p>A clear 12–24 month plan where every technology bet maps to revenue, cost or risk — written in
-      language the board understands, not jargon.</p>
-    </div>
-    <div class="card">
-      <span class="tag">Architecture</span>
-      <h3>Build vs. buy, decided correctly</h3>
-      <p>Hard-won judgement on what to build, what to buy, and what to kill — so you stop paying for the
-      wrong things and over-engineering the rest.</p>
-    </div>
-    <div class="card">
-      <span class="tag">Team</span>
-      <h3>Hiring &amp; levelling up engineers</h3>
-      <p>Recruit the right people, fix the structure, mentor the leads, and know when you genuinely need
-      a full-timer versus a contractor.</p>
-    </div>
-    <div class="card">
-      <span class="tag">Vendors</span>
-      <h3>Vendor &amp; cost control</h3>
-      <p>From an operator who has been the vendor — I negotiate contracts, audit cloud and SaaS spend, and
-      cut the fat without breaking the system.</p>
-    </div>
-    <div class="card">
-      <span class="tag">Risk</span>
-      <h3>Security, uptime &amp; compliance</h3>
-      <p>Infrastructure that stays up, data that stays safe, and the governance the board needs to sleep —
-      grounded in years of running networks and regulated finance.</p>
-    </div>
-    <div class="card">
-      <span class="tag">Diligence</span>
-      <h3>Investment &amp; M&amp;A readiness</h3>
-      <p>Technical due diligence, scalability assessments and the credibility that reassures investors and
-      acquirers your technology is an asset, not a liability.</p>
+<!-- ================= PAGE 3 · TRACK RECORD ================= -->
+<section class="page">
+  <div class="runhead"><span class="b"><span class="dot"></span>Digital One Agency</span><span>Fractional CTO Services</span></div>
+  <div class="content">
+    <p class="section-kicker">02 — Track record</p>
+    <h2 class="section">An operator, not a CV of job titles</h2>
+    <p class="section-lead">For 27 years I have owned the companies, carried the risk and lived with the outcomes. The breadth matters because modern technology decisions cut across all of it at once.</p>
+
+    <div class="timeline">
+      <div class="t-item">
+        <div class="t-era">Hardware</div>
+        <h3>Built and ran hardware businesses</h3>
+        <p>Sourcing, supply chains, margins on physical goods, support and RMA, and the cash-flow discipline that selling tangible product demands. I know what it costs to ship something real.</p>
+      </div>
+      <div class="t-item">
+        <div class="t-era">Software</div>
+        <h3>Owned software companies end to end</h3>
+        <p>Product strategy, build vs. buy, release cycles, technical debt and the day-to-day reality of shipping software people pay for — from spec to support desk.</p>
+      </div>
+      <div class="t-item">
+        <div class="t-era">Telecommunications</div>
+        <h3>Operated Internet Service Providers</h3>
+        <p>Networks, uptime, scale, peering and infrastructure under real load. When you've run an ISP, "the cloud" holds no mystery — it's just someone else's data centre with a markup.</p>
+      </div>
+      <div class="t-item">
+        <div class="t-era">Finance</div>
+        <h3>Founded and ran finance companies</h3>
+        <p>Lending, risk, compliance, regulation and the unit economics of money itself. I read a balance sheet the way most CTOs read a stack trace — and connect technology decisions to it.</p>
+      </div>
+      <div class="t-item">
+        <div class="t-era">Today · Digital One Agency</div>
+        <h3>Turning all of it into outcomes for clients</h3>
+        <p>That combined experience now runs through Digital One Agency — operator-grade technology leadership for growth businesses that need the judgement without the overhead.</p>
+      </div>
     </div>
   </div>
+  <div class="runfoot"><span>Digital One Agency</span><span>3</span></div>
+</section>
 
-  <!-- ============ WHY FRACTIONAL ============ -->
-  <h2>Why fractional works</h2>
-  <p class="section-intro">
-    A full-time CTO at the seniority you actually want costs base salary, equity, bonus, super and the
-    long tail of recruitment and ramp-up — often well north of a quarter-million a year before they've
-    delivered a thing. And for most companies, the role is only genuinely full-time during bursts.
-  </p>
+<!-- ================= PAGE 4 · WHAT YOU GET ================= -->
+<section class="page">
+  <div class="runhead"><span class="b"><span class="dot"></span>Digital One Agency</span><span>Fractional CTO Services</span></div>
+  <div class="content">
+    <p class="section-kicker">03 — Scope</p>
+    <h2 class="section">What an engagement delivers</h2>
+    <p class="section-lead">Senior leadership across the six areas where technology decisions make or cost you money.</p>
 
-  <div class="compare">
-    <div class="col full">
-      <h3>Full-time CTO hire</h3>
-      <div class="price">High fixed cost · long commitment</div>
-      <ul class="clean">
-        <li>$250k+ all-in, every year, regardless of workload</li>
-        <li>3–6 months to recruit, more to ramp</li>
-        <li>One person's experience, often from one industry</li>
-        <li>Hard and expensive to unwind if it's the wrong fit</li>
-        <li>Frequently under-utilised once the big project lands</li>
-      </ul>
-    </div>
-    <div class="col frac">
-      <h3>Fractional CTO — Digital One Agency</h3>
-      <div class="price">Flexible cost · senior judgement on tap</div>
-      <ul class="clean">
-        <li>Pay only for the leadership you actually need</li>
-        <li>Productive in week one — no ramp, no learning curve</li>
-        <li>27 years across five industries, in one operator</li>
-        <li>Scale up for a project, scale down when it's done</li>
-        <li>Founder-grade accountability without the headcount</li>
-      </ul>
+    <div class="cards">
+      <div class="card"><span class="tag">Strategy</span><h3>Roadmap tied to the P&amp;L</h3><p>A clear 12–24 month plan where every technology bet maps to revenue, cost or risk — in language the board understands, not jargon.</p></div>
+      <div class="card"><span class="tag">Architecture</span><h3>Build vs. buy, decided right</h3><p>Hard-won judgement on what to build, what to buy and what to kill — so you stop paying for the wrong things and over-engineering the rest.</p></div>
+      <div class="card"><span class="tag">Team</span><h3>Hiring &amp; levelling up engineers</h3><p>Recruit the right people, fix the structure, mentor the leads, and know when you genuinely need a full-timer versus a contractor.</p></div>
+      <div class="card"><span class="tag">Vendors</span><h3>Vendor &amp; cost control</h3><p>From an operator who has been the vendor — I negotiate contracts, audit cloud and SaaS spend, and cut the fat without breaking the system.</p></div>
+      <div class="card"><span class="tag">Risk</span><h3>Security, uptime &amp; compliance</h3><p>Infrastructure that stays up, data that stays safe, and the governance the board needs — grounded in years of running networks and regulated finance.</p></div>
+      <div class="card"><span class="tag">Diligence</span><h3>Investment &amp; M&amp;A readiness</h3><p>Technical due diligence and scalability assessments that reassure investors and acquirers your technology is an asset, not a liability.</p></div>
     </div>
   </div>
+  <div class="runfoot"><span>Digital One Agency</span><span>4</span></div>
+</section>
 
-  <p style="margin-top:24px">
-    Fractional isn't "CTO-lite." It's senior leadership matched to the moments that need it — and an
-    honest advisor whose incentive is your outcome, not protecting a permanent seat.
-  </p>
+<!-- ================= PAGE 5 · WHY FRACTIONAL ================= -->
+<section class="page">
+  <div class="runhead"><span class="b"><span class="dot"></span>Digital One Agency</span><span>Fractional CTO Services</span></div>
+  <div class="content">
+    <p class="section-kicker">04 — The model</p>
+    <h2 class="section">Why fractional works</h2>
+    <p class="section-lead">A full-time CTO at the seniority you actually want costs base salary, equity, bonus, super and a long tail of recruitment and ramp-up — often well north of a quarter-million a year before delivering a thing. And for most companies the role is only genuinely full-time in bursts.</p>
 
-  <!-- ============ HOW IT WORKS ============ -->
-  <h2>How we'd work together</h2>
-  <div class="steps">
-    <div class="step"><div class="n">1</div><div><h3>Diagnostic</h3><p>A short, fixed engagement to assess your stack, team, spend and risk — you get a written findings report whether or not we continue.</p></div></div>
-    <div class="step"><div class="n">2</div><div><h3>Roadmap</h3><p>A prioritised plan tied to commercial outcomes, with clear owners and timelines the board can hold to.</p></div></div>
-    <div class="step"><div class="n">3</div><div><h3>Execution</h3><p>Ongoing fractional leadership — a set number of days per month, embedded with your team, driving the roadmap.</p></div></div>
-    <div class="step"><div class="n">4</div><div><h3>Hand-off</h3><p>When the heavy lifting is done, I help you hire the permanent team or step back to a light-touch advisory cadence. No lock-in.</p></div></div>
+    <div class="compare">
+      <div class="col full">
+        <h3>Full-time CTO hire</h3>
+        <div class="price">High fixed cost · long commitment</div>
+        <ul class="ticks">
+          <li>$250k+ all-in, every year, regardless of workload</li>
+          <li>3–6 months to recruit, more to ramp</li>
+          <li>One person's experience, often from one industry</li>
+          <li>Hard and expensive to unwind if it's the wrong fit</li>
+          <li>Frequently under-utilised once the big project lands</li>
+        </ul>
+      </div>
+      <div class="col frac">
+        <h3>Fractional CTO — Digital One</h3>
+        <div class="price">Flexible cost · judgement on tap</div>
+        <ul class="ticks">
+          <li>Pay only for the leadership you actually need</li>
+          <li>Productive in week one — no ramp, no learning curve</li>
+          <li>27 years across five industries, in one operator</li>
+          <li>Scale up for a project, scale down when it's done</li>
+          <li>Founder-grade accountability without the headcount</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="closing-note">
+      Fractional isn't "CTO-lite." It's senior leadership matched to the moments that need it — and an
+      honest advisor whose incentive is your outcome, not protecting a permanent seat.
+    </p>
   </div>
+  <div class="runfoot"><span>Digital One Agency</span><span>5</span></div>
+</section>
 
-  <!-- ============ WHY CHOOSE US ============ -->
-  <h2>Why choose us</h2>
-  <ul class="clean">
-    <li><strong>Owner's mindset.</strong> I've carried payroll and signed the leases. I treat your money like mine because for 27 years it was.</li>
-    <li><strong>Unusual breadth.</strong> Hardware, software, networks and finance under one operator — so cross-cutting decisions get made by someone who's lived every side.</li>
-    <li><strong>Plain English.</strong> I translate between the engineering room and the boardroom without losing either side.</li>
-    <li><strong>No empire-building.</strong> I'll tell you when you <em>don't</em> need to spend, hire or build. Few full-time CTOs are incentivised to.</li>
-    <li><strong>Skin in the outcome.</strong> Engagements are structured around your results, not my hours.</li>
-  </ul>
+<!-- ================= PAGE 6 · PROCESS + WHY US ================= -->
+<section class="page">
+  <div class="runhead"><span class="b"><span class="dot"></span>Digital One Agency</span><span>Fractional CTO Services</span></div>
+  <div class="content">
+    <p class="section-kicker">05 — Working together</p>
+    <h2 class="section">A clear, low-risk way in</h2>
+    <p class="section-lead">Start small, prove value, scale the engagement to fit — never the other way around.</p>
 
-  <!-- ============ CTA ============ -->
-  <div class="cta">
-    <h2>Let's pressure-test your technology strategy</h2>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div><h3>Diagnostic</h3><p>A short, fixed engagement to assess your stack, team, spend and risk — with a written findings report whether or not we continue.</p></div></div>
+      <div class="step"><div class="n">2</div><div><h3>Roadmap</h3><p>A prioritised plan tied to commercial outcomes, with clear owners and timelines the board can hold to.</p></div></div>
+      <div class="step"><div class="n">3</div><div><h3>Execution</h3><p>Ongoing fractional leadership — a set number of days per month, embedded with your team, driving the roadmap.</p></div></div>
+      <div class="step"><div class="n">4</div><div><h3>Hand-off</h3><p>When the heavy lifting is done, I help you hire the permanent team or step back to light-touch advisory. No lock-in.</p></div></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 style="font-size:13pt; margin-bottom:12px;">Why choose us</h3>
+    <ul class="reasons">
+      <li><strong>Owner's mindset.</strong> I've carried payroll and signed the leases. I treat your money like mine because for 27 years it was.</li>
+      <li><strong>Unusual breadth.</strong> Hardware, software, networks and finance in one operator — so cross-cutting calls are made by someone who's lived every side.</li>
+      <li><strong>Plain English.</strong> I translate between the engineering room and the boardroom without losing either side.</li>
+      <li><strong>No empire-building.</strong> I'll tell you when you <em>don't</em> need to spend, hire or build. Few full-time CTOs are incentivised to.</li>
+    </ul>
+  </div>
+  <div class="runfoot"><span>Digital One Agency</span><span>6</span></div>
+</section>
+
+<!-- ================= PAGE 7 · CLOSING ================= -->
+<section class="page closing">
+  <div class="runhead"><span class="b"><span class="dot"></span>Digital One Agency</span><span>Fractional CTO Services</span></div>
+  <div class="content inner">
+    <p class="eyebrow">Let's talk</p>
+    <h2>Pressure-test your technology strategy.</h2>
     <p>
       Start with a no-obligation diagnostic conversation. Bring your hardest technology question — the one
       that's been sitting on the board agenda — and let's see what 27 years of operating makes of it.
     </p>
     <a class="btn" href="mailto:ken@digitaloneagency.com.au?subject=Fractional%20CTO%20enquiry">Book a diagnostic call</a>
-    <div class="contact-row">
-      <span>Ken</span> · Digital One Agency &nbsp;·&nbsp; <span>ken@digitaloneagency.com.au</span>
+
+    <div class="contact">
+      <div class="item"><div class="k">Contact</div><div class="v">Ken</div></div>
+      <div class="item"><div class="k">Email</div><div class="v">ken@digitaloneagency.com.au</div></div>
+      <div class="item"><div class="k">Practice</div><div class="v">Digital One Agency</div></div>
     </div>
   </div>
+  <div class="runfoot"><span>Confidential · Prepared for prospective clients</span><span>7</span></div>
+</section>
 
-  <footer>
-    <span>Digital One Agency — Fractional CTO Services</span>
-    <span>Confidential · Prepared for prospective clients</span>
-  </footer>
-
-</div>
 </body>
 </html>
