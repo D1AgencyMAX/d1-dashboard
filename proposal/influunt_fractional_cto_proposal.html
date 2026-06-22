@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fractional CTO Proposal — Influunt</title>
+<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 20mm 18mm;
+    @bottom-center {
+      content: "Private & Confidential  ·  Prepared by Digital One Agency for Influunt Pty Ltd";
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 7.5pt;
+      color: #9a8a5c;
+    }
+    @bottom-right {
+      content: counter(page) " / " counter(pages);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-size: 7.5pt;
+      color: #9a8a5c;
+    }
+  }
+  @page cover { margin: 0; }
+
+  :root {
+    --gold: #c9a227;
+    --gold-soft: #e7cf86;
+    --ink: #1a1a1a;
+    --slate: #3d3d3d;
+    --muted: #6b675c;
+    --line: #e4ddca;
+    --bg-soft: #faf7ee;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #2a2a2a;
+    font-size: 10.3pt;
+    line-height: 1.5;
+    margin: 0;
+    -weasy-hyphens: none;
+  }
+
+  /* ---------- COVER ---------- */
+  .cover {
+    page: cover;
+    position: relative;
+    height: 297mm;
+    width: 210mm;
+    background: linear-gradient(150deg, #0d0d0f 0%, #15140f 45%, #221b08 100%);
+    color: #f4eede;
+    padding: 34mm 22mm;
+    page-break-after: always;
+    overflow: hidden;
+  }
+  .cover .ring {
+    position: absolute;
+    width: 360mm; height: 360mm;
+    border: 1px solid rgba(201,162,39,0.18);
+    border-radius: 50%;
+    top: -150mm; right: -160mm;
+  }
+  .cover .ring2 {
+    position: absolute;
+    width: 220mm; height: 220mm;
+    border: 1px solid rgba(201,162,39,0.10);
+    border-radius: 50%;
+    bottom: -90mm; left: -90mm;
+  }
+  .brandrow { display:flex; justify-content:space-between; align-items:flex-start; position:relative; z-index:2;}
+  .brandmark {
+    font-size: 15pt; letter-spacing: 4px; font-weight: 700; color: var(--gold-soft);
+    text-transform: uppercase;
+  }
+  .brandmark small { display:block; font-size:7.5pt; letter-spacing:3px; color:#8a8270; font-weight:400; margin-top:4px;}
+  .confchip {
+    border:1px solid rgba(201,162,39,0.5); color: var(--gold-soft);
+    font-size:7.5pt; letter-spacing:2px; padding:5px 12px; border-radius:20px; text-transform:uppercase;
+  }
+  .cover-mid { position:relative; z-index:2; margin-top: 58mm; }
+  .kicker { color: var(--gold); letter-spacing:5px; font-size:9pt; text-transform:uppercase; margin-bottom:14px;}
+  .cover h1 { font-size: 40pt; line-height:1.05; margin:0; font-weight:700; color:#fff; }
+  .cover h1 span { color: var(--gold); }
+  .cover .sub { font-size: 12.5pt; color:#cabfa3; margin-top:18px; max-width: 135mm; line-height:1.5;}
+  .cover-foot { position:absolute; bottom:30mm; left:22mm; right:22mm; z-index:2; }
+  .cover-foot .divider { height:1px; background:linear-gradient(90deg,var(--gold),rgba(201,162,39,0)); margin-bottom:14px;}
+  .cover-grid { display:flex; gap:18mm; }
+  .cover-grid div .lab { font-size:7.5pt; letter-spacing:2px; color:#8a8270; text-transform:uppercase;}
+  .cover-grid div .val { font-size:10.5pt; color:#f4eede; margin-top:4px; }
+
+  /* ---------- CONTENT ---------- */
+  h2.section {
+    font-size: 16pt; color: var(--ink); margin: 26px 0 4px 0; padding-top:6px;
+    border-top: 2px solid var(--gold); display:inline-block; padding-right:40px;
+    page-break-after: avoid;
+  }
+  .sectnum { color: var(--gold); font-weight:700; }
+  h3 { font-size: 11.5pt; color:#1d1d1d; margin: 16px 0 4px; page-break-after: avoid;}
+  p { margin: 6px 0; }
+  .lead { font-size: 11pt; color:#33312c; }
+  ul { margin: 6px 0; padding-left: 18px; }
+  li { margin: 3px 0; }
+  strong { color:#1a1a1a; }
+  .muted { color:#6b675c; }
+  a { color: #9a7d12; text-decoration:none; }
+
+  .callout {
+    background: var(--bg-soft); border-left: 3px solid var(--gold);
+    padding: 12px 16px; margin: 14px 0; border-radius: 0 6px 6px 0;
+  }
+  .callout .t { font-weight:700; color:#1a1a1a; letter-spacing:0.3px;}
+
+  table { width:100%; border-collapse: collapse; margin: 12px 0; font-size: 9.6pt; }
+  th { background:#1a1a1a; color:#f4eede; text-align:left; padding:8px 10px; font-size:8.5pt; letter-spacing:0.5px; text-transform:uppercase;}
+  td { padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:nth-child(even) td { background:#fbf9f2; }
+  td.num { text-align:right; white-space:nowrap; font-variant-numeric: tabular-nums; }
+  .tot td { background:#f2ead2 !important; font-weight:700; border-top:2px solid var(--gold); }
+
+  .pillrow { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0; }
+  .pill { background:#1a1a1a; color:#e7cf86; font-size:8pt; padding:5px 11px; border-radius:14px; letter-spacing:0.5px;}
+
+  .cards { display:flex; gap:12px; margin:14px 0; }
+  .card { flex:1; border:1px solid var(--line); border-radius:8px; padding:14px; background:#fff; }
+  .card.reco { border:2px solid var(--gold); background:var(--bg-soft); position:relative; }
+  .card .ribbon { position:absolute; top:-10px; right:12px; background:var(--gold); color:#1a1a1a; font-size:7pt; font-weight:700; letter-spacing:1px; padding:3px 8px; border-radius:10px; text-transform:uppercase;}
+  .card .tier { font-size:8pt; letter-spacing:2px; text-transform:uppercase; color:#9a8a5c; }
+  .card .nm { font-size:12.5pt; font-weight:700; color:#1a1a1a; margin:3px 0; }
+  .card .pr { font-size:16pt; font-weight:700; color:#1a1a1a; }
+  .card .pr small { font-size:8.5pt; font-weight:400; color:#6b675c; }
+  .card .days { font-size:8.5pt; color:#9a7d12; margin:2px 0 8px; font-weight:600;}
+  .card ul { padding-left:15px; font-size:8.8pt; }
+  .card li { margin:3px 0; }
+
+  .statbar { display:flex; gap:0; margin:14px 0; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .statbar div { flex:1; padding:12px 10px; text-align:center; border-right:1px solid var(--line);}
+  .statbar div:last-child { border-right:none; }
+  .statbar .n { font-size:15pt; font-weight:700; color:var(--gold); }
+  .statbar .l { font-size:7.8pt; color:#6b675c; letter-spacing:0.5px; margin-top:2px;}
+
+  .phasebox { border:1px solid var(--line); border-radius:8px; padding:0; margin:14px 0; overflow:hidden;}
+  .phasehd { background:#1a1a1a; color:#fff; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;}
+  .phasehd .pt { font-size:12pt; font-weight:700; }
+  .phasehd .pp { color:var(--gold); font-size:12pt; font-weight:700; }
+  .phasebody { padding:14px 16px; }
+
+  .two { display:flex; gap:18px; }
+  .two > div { flex:1; }
+
+  .avoid { page-break-inside: avoid; }
+  .pagebreak { page-break-before: always; }
+
+  .signgrid { display:flex; gap:40px; margin-top:30px;}
+  .signgrid > div { flex:1; }
+  .sigline { border-bottom:1px solid #1a1a1a; height:34px; margin-bottom:5px;}
+  .small { font-size:8.5pt; color:#6b675c;}
+</style>
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<section class="cover">
+  <div class="ring"></div>
+  <div class="ring2"></div>
+  <div class="brandrow">
+    <div class="brandmark">DIGITAL ONE<small>AGENCY · TECHNOLOGY LEADERSHIP</small></div>
+    <div class="confchip">Private &amp; Confidential</div>
+  </div>
+
+  <div class="cover-mid">
+    <div class="kicker">Engagement Proposal</div>
+    <h1>Fractional <span>CTO</span><br>for Influunt</h1>
+    <div class="sub">Executive technology leadership to build the platform, govern the A$1.1M technology spend, ship to the pilot, and carry Influunt into its A$5M raise — backed by gold, built for scale.</div>
+  </div>
+
+  <div class="cover-foot">
+    <div class="divider"></div>
+    <div class="cover-grid">
+      <div>
+        <div class="lab">Prepared for</div>
+        <div class="val">Bradley Crawford<br>Co-Founder &amp; CEO, Influunt Pty Ltd</div>
+      </div>
+      <div>
+        <div class="lab">Prepared by</div>
+        <div class="val">Ken · Digital One Agency<br>ken@digitaloneagency.com.au</div>
+      </div>
+      <div>
+        <div class="lab">Date</div>
+        <div class="val">22 June 2026<br>Valid 30 days</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 1. EXEC SUMMARY ================= -->
+<h2 class="section"><span class="sectnum">01</span> &nbsp;Executive Summary</h2>
+
+<p class="lead">Influunt has done the hard early work most startups never reach: a signed 10,000-member pilot, a compliance-first structure, a costed blueprint, and named specialists. What it does not yet have is a single, accountable technology executive who owns the build end-to-end — turning that blueprint into a live, regulated, gold-backed platform, and standing behind it in front of investors.</p>
+
+<p>That is the role this proposal fills. As your <strong>Fractional CTO</strong>, Digital One Agency provides senior, hands-on technology leadership at a fraction of the cost of a full-time hire — exactly the right model for a pre-seed company that needs CTO-grade decisions now, but cannot yet justify a A$300k+ executive salary plus equity.</p>
+
+<div class="callout">
+  <div class="t">Why this is the highest-leverage hire in your A$1.6M round</div>
+  <p style="margin-bottom:0">Your own Use of Funds allocates <strong>A$575,000 to “Build the platform”</strong> and <strong>A$528,000 to “Technology &amp; pilot”</strong> — roughly <strong>A$1.1M, or ~69% of the entire raise, is technology spend.</strong> A fractional CTO is the person who makes that A$1.1M accountable: right architecture, right build-vs-buy calls, right vendors, right sequence. Get this leadership wrong and the largest line item in your round is at risk. Get it right and you de-risk both the build and the next raise.</p>
+</div>
+
+<div class="statbar avoid">
+  <div><div class="n">A$25k</div><div class="l">Fixed-price Foundation Sprint to start</div></div>
+  <div><div class="n">~5 wks</div><div class="l">From kickoff to investor-ready tech plan</div></div>
+  <div><div class="n">A$1.1M</div><div class="l">Tech spend the CTO governs</div></div>
+  <div><div class="n">10,000</div><div class="l">Pilot members to onboard at launch</div></div>
+</div>
+
+<p>The engagement is deliberately structured in two parts: an <strong>initial fixed-price Foundation Sprint (A$25,000)</strong> that produces a definitive technology blueprint, vendor &amp; build plan, regulatory-technology map and investor-grade due-diligence pack — followed by an <strong>ongoing monthly retainer</strong> that provides continuous CTO leadership through build and launch. You can stop after the Sprint with a complete, independent technology plan in hand and no further commitment.</p>
+
+<!-- ================= 2. OUR UNDERSTANDING ================= -->
+<h2 class="section pagebreak"><span class="sectnum">02</span> &nbsp;Our Understanding of Influunt</h2>
+<p class="muted" style="margin-top:0">Drawn directly from your Funding Round deck — so we start aligned on what we are building.</p>
+
+<div class="two">
+  <div>
+    <h3>The proposition</h3>
+    <p>A "private bank for entrepreneurs" where deposits convert to <strong>ICC</strong> — a digital coin backed one-for-one by real, vaulted, independently audited gold. Members hold an appreciating gold asset they can spend, borrow against, and earn platform income on, while owning a piece of the bank itself.</p>
+    <h3>Four revenue streams</h3>
+    <ul>
+      <li><strong>Buying &amp; selling</strong> — fee on every gold trade/swap</li>
+      <li><strong>Vaulting &amp; care</strong> — storage, insurance, audit</li>
+      <li><strong>Lending</strong> — interest on loans against gold</li>
+      <li><strong>Payments &amp; partners</strong> — cards, transfers, ecosystem</li>
+    </ul>
+  </div>
+  <div>
+    <h3>What's already in place</h3>
+    <ul>
+      <li><strong>Signed national wellness pilot</strong> — 10,000 members ready to onboard day one</li>
+      <li><strong>Costed blueprint</strong> — designed and ready to build</li>
+      <li><strong>Specialist bench</strong> — Chief Platform Architect (P. Tippett), Banking Cloud &amp; Cyber (C. Murphy), Architect Advisor (Dr F. Yu), Special Counsel</li>
+      <li><strong>Profit-share engine</strong> — 25% members / 40% gold / 15% investors / 20% R&amp;D</li>
+      <li><strong>AI "Holli"</strong> — automating paperwork and ops</li>
+    </ul>
+    <h3>The trajectory</h3>
+    <p>A$1.6M now (build &amp; switch on) → A$5M (members &amp; partners at scale) → A$35M (multi-market) → A$250M (BioGold urban-mining reserve).</p>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="t">The honest technical reality of what you're building</div>
+  <p>Influunt is not "an app." It is, in effect, a <strong>regulated financial institution</strong>: a gold-custody and proof-of-reserves system, a 1:1 asset-backed token (ICC) with issuance/redemption controls, a core ledger and accounting engine that must split every dollar four ways with audit integrity, lending and collateral logic, card/payment rails, AML/CTF and KYC pipelines, and an AI ops layer. Each of these is individually demanding; together they require <strong>deliberate architecture, sequencing and governance</strong> — and a leader who has shipped regulated fintech before. That is precisely the gap a fractional CTO closes.</p>
+</div>
+
+<!-- ================= 3. WHY A CTO NOW ================= -->
+<h2 class="section"><span class="sectnum">03</span> &nbsp;The Gap a Fractional CTO Closes</h2>
+<p>You have technical specialists, but specialists are not the same as a CTO. The specialists answer <em>“can we build this component?”</em> The CTO answers <em>“what do we build, in what order, with whom, for how much, against which regulations — and how do I prove it to an investor?”</em></p>
+
+<table>
+  <tr><th style="width:50%">The risk today, without a CTO</th><th>What the Fractional CTO owns</th></tr>
+  <tr><td>A$1.1M tech budget spent without a single accountable owner of architecture and sequence.</td><td><strong>Architecture &amp; spend governance</strong> — every build-vs-buy decision tied to budget and roadmap.</td></tr>
+  <tr><td>Brilliant specialists optimising their own components, with no one owning the whole.</td><td><strong>Technical leadership &amp; RACI</strong> across Tippett, Murphy, Yu and external vendors.</td></tr>
+  <tr><td>A "bank" built without a deliberate AML/CTF, licensing and custody-of-keys posture.</td><td><strong>Regulatory-technology mapping</strong> with your Special Counsel — compliance designed in, not bolted on.</td></tr>
+  <tr><td>Investor technical due diligence on the A$5M raise met with slideware, not substance.</td><td><strong>Investor-grade tech narrative &amp; data room</strong>, and a credible technologist to field DD calls.</td></tr>
+  <tr><td>Pilot launch slips because no one owns the critical path to 10,000 onboarded members.</td><td><strong>Delivery roadmap &amp; launch ownership</strong> to the pilot, with milestones and a hiring plan.</td></tr>
+</table>
+
+<!-- ================= 4. ENGAGEMENT MODEL ================= -->
+<h2 class="section pagebreak"><span class="sectnum">04</span> &nbsp;The Engagement, in Two Stages</h2>
+<p class="lead">Start small and fixed-price. Continue only if the value is obvious.</p>
+
+<!-- PHASE 1 -->
+<div class="phasebox">
+  <div class="phasehd">
+    <div class="pt">Stage 1 — Foundation Sprint <span class="muted" style="color:#bbb; font-weight:400; font-size:9pt;">(initial engagement)</span></div>
+    <div class="pp">A$25,000 fixed</div>
+  </div>
+  <div class="phasebody">
+    <p style="margin-top:0"><strong>Duration ~4–5 weeks.</strong> A focused, senior deep-dive that converts your blueprint into a definitive, costed, build-ready and investor-ready technology plan. This is your A$25k kickstart — fixed price, fixed scope, no surprises.</p>
+    <div class="pillrow">
+      <span class="pill">Architecture blueprint</span>
+      <span class="pill">Build vs buy vs partner</span>
+      <span class="pill">Vendor shortlist &amp; costs</span>
+      <span class="pill">Regulatory-tech map</span>
+      <span class="pill">Security &amp; custody design</span>
+      <span class="pill">Delivery roadmap</span>
+      <span class="pill">Investor DD pack</span>
+    </div>
+
+    <table>
+      <tr><th style="width:30%">Deliverable</th><th>What you receive</th></tr>
+      <tr>
+        <td><strong>A. Target Architecture Blueprint</strong></td>
+        <td>Validated, end-to-end system design: core ledger &amp; four-way profit-share accounting engine, ICC issuance/redemption, gold custody &amp; proof-of-reserves, lending/collateral, card &amp; payment rails, AML/KYC pipeline, and the "Holli" AI ops layer — with clear domain boundaries.</td>
+      </tr>
+      <tr>
+        <td><strong>B. Build vs Buy vs Partner</strong></td>
+        <td>A decision for each component (banking-as-a-service core, tokenisation/custody, card issuing, gold vaulting/audit feeds) with a <strong>shortlisted vendor list and indicative costs mapped to your ~A$1.1M technology budget</strong>.</td>
+      </tr>
+      <tr>
+        <td><strong>C. Regulatory-Technology Map</strong></td>
+        <td>Working with your Special Counsel: AUSTRAC AML/CTF program requirements, licensing pathway (AFSL / authorised-rep / payments &amp; stored-value), RWA-token structure, data residency &amp; privacy, and an ISO 27001 / SOC 2 readiness path — translated into technical requirements.</td>
+      </tr>
+      <tr>
+        <td><strong>D. Security &amp; Custody Architecture</strong></td>
+        <td>Key-management and custody model, segregation of duties, proof-of-reserves &amp; audit integration, and a risk register with mitigations — the things an institutional investor and a regulator will both ask about.</td>
+      </tr>
+      <tr>
+        <td><strong>E. Delivery Roadmap &amp; Team Plan</strong></td>
+        <td>A milestone roadmap to pilot launch (onboarding 10,000 members), critical path, a RACI across your existing specialists, and a hiring/contractor plan with budget.</td>
+      </tr>
+      <tr>
+        <td><strong>F. Investor Due-Diligence Pack</strong></td>
+        <td>A clean technology section for your data room and an executive tech narrative — built so that the A$5M raise survives technical due diligence.</td>
+      </tr>
+    </table>
+    <p class="small" style="margin-bottom:0"><strong>Format:</strong> 50% on commencement, 50% on delivery. Includes a live walkthrough with you and the founding team. If you choose to stop here, the plan is yours to keep and execute with anyone.</p>
+  </div>
+</div>
+
+<!-- PHASE 2 -->
+<div class="phasebox">
+  <div class="phasehd">
+    <div class="pt">Stage 2 — Ongoing Fractional CTO <span class="muted" style="color:#bbb; font-weight:400; font-size:9pt;">(monthly retainer)</span></div>
+    <div class="pp">from A$8,500/mo</div>
+  </div>
+  <div class="phasebody">
+    <p style="margin-top:0">Continuous, accountable technology leadership through build and launch — strategy, vendor &amp; team management, architecture governance, security &amp; compliance oversight, and board/investor technology representation. Choose the intensity that matches your stage; move up or down with 30 days' notice.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="tier">Tier 1</div>
+        <div class="nm">Launchpad</div>
+        <div class="pr">A$8,500<small>/mo</small></div>
+        <div class="days">~4 days / month</div>
+        <ul>
+          <li>Architecture &amp; spend governance</li>
+          <li>Fortnightly leadership cadence</li>
+          <li>Vendor &amp; specialist oversight</li>
+          <li>Board tech updates</li>
+          <li>On-call for key decisions</li>
+        </ul>
+      </div>
+      <div class="card reco">
+        <div class="ribbon">Recommended</div>
+        <div class="tier">Tier 2</div>
+        <div class="nm">Build Lead</div>
+        <div class="pr">A$16,000<small>/mo</small></div>
+        <div class="days">~8 days / month</div>
+        <ul>
+          <li>Everything in Launchpad, plus:</li>
+          <li>Hands-on delivery leadership to pilot</li>
+          <li>Active vendor &amp; hiring management</li>
+          <li>Security/compliance execution</li>
+          <li><strong>Leads A$5M-raise technical DD</strong></li>
+          <li>Weekly cadence + investor support</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="tier">Tier 3</div>
+        <div class="nm">Embedded</div>
+        <div class="pr">A$26,000<small>/mo</small></div>
+        <div class="days">~13 days / month</div>
+        <ul>
+          <li>Everything in Build Lead, plus:</li>
+          <li>Near-FT presence through critical build</li>
+          <li>Day-to-day eng team leadership</li>
+          <li>Hands-on through pilot go-live</li>
+          <li>Priority availability</li>
+        </ul>
+      </div>
+    </div>
+    <p class="small" style="margin-bottom:0">Given the build phase, we recommend starting at <strong>Build Lead</strong> through to pilot launch, then stepping down to Launchpad for steady-state. Initial term 6 months, monthly thereafter.</p>
+  </div>
+</div>
+
+<!-- ================= 5. CASH/EQUITY ================= -->
+<h2 class="section"><span class="sectnum">05</span> &nbsp;A Model That Mirrors Yours: Cash + Equity</h2>
+<p>Influunt's whole thesis is shared ownership — members become investors. We're happy to align the same way. As an option, we will take a portion of the ongoing retainer as <strong>equity or an ICC allocation</strong> rather than cash, reducing your monthly burn during the build while putting our incentives alongside yours.</p>
+<table>
+  <tr><th>Option</th><th>Cash</th><th>Equity / ICC</th><th>Best when</th></tr>
+  <tr><td><strong>Standard</strong></td><td>100% of retainer</td><td>—</td><td>Cash from the round is plentiful; maximum flexibility.</td></tr>
+  <tr><td><strong>Aligned (blend)</strong></td><td>~65% of retainer</td><td>Equity/ICC for the balance, vesting over the term</td><td>You want to extend runway and bind the CTO to long-term outcomes. <em>Our recommendation.</em></td></tr>
+  <tr><td><strong>Founder-aligned</strong></td><td>Foundation Sprint only (A$25k)</td><td>Larger equity grant for ongoing role</td><td>You want CTO leadership with minimal ongoing cash before the A$5M closes.</td></tr>
+</table>
+<p class="small">Equity/ICC terms to be agreed in good faith against the A$20M valuation and finalised with your Special Counsel.</p>
+
+<!-- ================= 6. FIRST 90 DAYS ================= -->
+<h2 class="section pagebreak"><span class="sectnum">06</span> &nbsp;What the First 90 Days Look Like</h2>
+<table>
+  <tr><th style="width:18%">Period</th><th>Focus</th><th>Outcome</th></tr>
+  <tr><td><strong>Weeks 1–5</strong><br><span class="small">Foundation Sprint</span></td><td>Deep-dive, architecture, vendor &amp; regulatory mapping, roadmap, investor pack.</td><td>A definitive, costed, build-ready technology plan and a data-room-ready DD pack.</td></tr>
+  <tr><td><strong>Weeks 6–8</strong></td><td>Lock vendors &amp; partners; finalise the build team / contractors; stand up engineering governance, environments and security baseline.</td><td>Build machine assembled and moving against the roadmap; spend under control.</td></tr>
+  <tr><td><strong>Weeks 9–13</strong></td><td>Drive core build (ledger, ICC, custody integration, KYC/AML); support the A$5M raise with technical DD; report to the board.</td><td>Demonstrable progress to investors; critical path to pilot launch de-risked.</td></tr>
+</table>
+
+<!-- ================= 7. INVESTMENT SUMMARY ================= -->
+<h2 class="section"><span class="sectnum">07</span> &nbsp;Investment Summary</h2>
+<table>
+  <tr><th>Item</th><th>Structure</th><th class="num">Investment (A$)</th></tr>
+  <tr><td><strong>Stage 1 — Foundation Sprint</strong><br><span class="small">Initial engagement · ~4–5 weeks · fixed price</span></td><td>50% on start / 50% on delivery</td><td class="num">25,000</td></tr>
+  <tr><td><strong>Stage 2 — Fractional CTO retainer</strong><br><span class="small">Recommended: Build Lead through launch</span></td><td>Monthly · 6-month initial term</td><td class="num">16,000 / mo</td></tr>
+  <tr class="tot"><td>Indicative first 6 months</td><td>Sprint + 5 months Build Lead retainer*</td><td class="num">105,000</td></tr>
+</table>
+<p class="small">*Illustrative: A$25,000 Sprint + 5 × A$16,000. The Sprint month overlaps the first retainer month, or the retainer begins on Sprint completion — your choice. Figures exclude GST. The Aligned cash/equity option above can materially reduce the cash component.</p>
+
+<div class="callout">
+  <div class="t">The return on a A$25,000 decision</div>
+  <p style="margin-bottom:0">For the price of roughly <strong>2.3% of your technology budget</strong>, the Foundation Sprint puts an experienced fintech technology executive in charge of how the other <strong>97.7% (~A$1.1M)</strong> is architected and spent — and hands you the investor-grade technical story your A$5M raise will be judged on. It is the cheapest insurance available on the most expensive part of your round.</p>
+</div>
+
+<!-- ================= 8. WHY D1 ================= -->
+<h2 class="section"><span class="sectnum">08</span> &nbsp;Why Digital One Agency</h2>
+<div class="two">
+  <div>
+    <ul>
+      <li><strong>Executive leadership, fractional cost</strong> — CTO-grade decisions without a A$300k+ salary and full equity load.</li>
+      <li><strong>Builder, not just advisor</strong> — we own delivery and stand behind the architecture, not just a slide deck.</li>
+      <li><strong>Investor-fluent</strong> — we speak to founders and to the technologists doing due diligence on your raise.</li>
+    </ul>
+  </div>
+  <div>
+    <ul>
+      <li><strong>Compliance-first instinct</strong> — built for regulated, money-movement products where getting it wrong is existential.</li>
+      <li><strong>Aligned incentives</strong> — willing to take equity/ICC alongside you, the same way your members become owners.</li>
+      <li><strong>Low-risk entry</strong> — a fixed-price Sprint you can stop after, with a complete plan in hand.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ================= 9. NEXT STEPS ================= -->
+<h2 class="section"><span class="sectnum">09</span> &nbsp;Next Steps</h2>
+<ol>
+  <li><strong>30-minute alignment call</strong> — confirm scope, priorities and the cash/equity preference.</li>
+  <li><strong>Countersign this proposal</strong> and a short engagement agreement.</li>
+  <li><strong>Kick off the Foundation Sprint</strong> — we can start within one week of signing.</li>
+</ol>
+
+<div class="signgrid avoid">
+  <div>
+    <div class="sigline"></div>
+    <strong>Bradley Crawford</strong><br>
+    <span class="small">Co-Founder &amp; CEO, Influunt Pty Ltd</span><br>
+    <span class="small">Date: ___________________</span>
+  </div>
+  <div>
+    <div class="sigline"></div>
+    <strong>Ken</strong><br>
+    <span class="small">Founder &amp; Principal, Digital One Agency</span><br>
+    <span class="small">ken@digitaloneagency.com.au</span>
+  </div>
+</div>
+
+<p class="small" style="margin-top:24px; color:#9a8a5c;">This proposal is private and confidential and prepared solely for Influunt Pty Ltd. Pricing is valid for 30 days from the date above and is exclusive of GST. Equity/ICC arrangements, where elected, are indicative and subject to formal documentation and legal review.</p>
+
+</body>
+</html>
