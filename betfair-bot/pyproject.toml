@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "betfair-bot"
+version = "0.1.0"
+description = "Daily Betfair research-and-bet bot: scans markets, researches events, estimates fair probabilities and bets only with a validated edge."
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+ml = [
+    "lightgbm>=4.0",
+    "xgboost>=2.0",
+    "scikit-learn>=1.4",
+]
+news = [
+    "anthropic>=0.40",
+]
+service = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "psycopg[binary]>=3.1",
+    "redis>=5.0",
+]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+betfair-bot = "betfair_bot.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["betfair_bot*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

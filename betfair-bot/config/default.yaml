@@ -1,0 +1,120 @@
+# Betfair research-and-bet bot configuration.
+# All percentages are expressed as fractions of bankroll unless stated otherwise.
+
+mode: paper                 # paper | live  (live also requires BETFAIR_LIVE_CONFIRM=YES in env)
+timezone: Australia/Sydney
+
+betfair:
+  # Credentials come from the environment / secrets manager, never from this file:
+  #   BETFAIR_APP_KEY, BETFAIR_USERNAME, BETFAIR_PASSWORD,
+  #   BETFAIR_CERT_FILE, BETFAIR_KEY_FILE  (cert login for unattended bots)
+  login: certificate        # certificate | interactive
+  endpoint: "https://api.betfair.com/exchange/betting/json-rpc/v1"
+  identity_endpoint: "https://identitysso-cert.betfair.com/api/certlogin"
+  keep_alive_endpoint: "https://identitysso.betfair.com/api/keepAlive"
+  keep_alive_minutes: 15
+  commission_rate: 0.05     # conservative default; the true Market Base Rate is in market rules
+  max_request_weight: 200   # Betfair aggregate weight cap per data request
+  price_poll_seconds: 60
+
+discovery:
+  hours_ahead: 24
+  run_at: "04:00"
+  min_total_matched: 1000        # AUD traded volume required to even research a market
+  sports:
+    horse_racing:
+      event_type_id: "7"
+      market_types: ["WIN"]
+      countries: ["AU", "NZ", "GB", "IE"]
+    greyhounds:
+      event_type_id: "4339"
+      market_types: ["WIN"]
+      countries: ["AU", "NZ"]
+    football:
+      event_type_id: "1"
+      market_types: ["MATCH_ODDS", "OVER_UNDER_25"]
+      countries: []
+    tennis:
+      event_type_id: "2"
+      market_types: ["MATCH_ODDS"]
+      countries: []
+    afl:
+      event_type_id: "61420"
+      market_types: ["MATCH_ODDS"]
+      countries: []
+    nrl:
+      event_type_id: "1477"
+      market_types: ["MATCH_ODDS"]
+      countries: []
+    cricket:
+      event_type_id: "4"
+      market_types: ["MATCH_ODDS"]
+      countries: []
+
+research:
+  recalc_minutes_min: 15
+  recalc_minutes_max: 60
+  max_fact_age_hours: 48          # facts older than this are rejected as stale
+  news_reliability_floor: 0.60    # unverified sources below this never gate a bet on their own
+  # Final pre-event validation checkpoints, minutes before scheduled start.
+  final_checks_minutes:
+    horse_racing: [10, 5, 2, 1]
+    greyhounds: [10, 5, 2, 1]
+    football: [360, 90, 15]
+    tennis: [240, 30, 5]
+    afl: [360, 60, 10]
+    nrl: [360, 60, 10]
+    cricket: [360, 60, 15]
+
+# Initial ensemble priors. Back-testing re-optimises these per sport/market;
+# they are starting weights, not permanent assumptions.
+ensemble_weights:
+  historical_model: 0.25
+  recent_form: 0.20
+  availability: 0.15
+  independent_market_consensus: 0.15
+  betfair_order_book: 0.10
+  venue_conditions_weather: 0.07
+  rest_travel_schedule: 0.05
+  news_sentiment: 0.03
+
+selection:
+  minimum_expected_value: 0.04       # commission-adjusted EV floor
+  minimum_model_confidence: 0.70
+  safety_margin: 0.01                # P_lower_bound must beat break-even by this
+  max_price_drift_pct: 0.05          # reject if price moved more than this since scoring
+  min_available_liquidity: 200       # AUD available at our price or better
+  min_historical_sample: 300         # model must be trained on at least this many events
+  max_model_disagreement: 0.08       # spread between component estimates
+  min_seconds_before_start: 45       # never place inside this window pre-jump
+  opportunity_score_weights:
+    expected_value: 0.35
+    model_confidence: 0.20
+    calibration_quality: 0.15
+    market_liquidity: 0.10
+    source_quality: 0.10
+    price_stability: 0.05
+    data_completeness: 0.05
+
+risk:
+  bankroll: 1000.0                   # separate, fixed bankroll — never the whole account
+  kelly_fraction: 0.10
+  maximum_stake_bankroll_pct: 0.005  # 0.50%
+  maximum_event_exposure_pct: 0.01   # 1.00%
+  maximum_sport_exposure_pct: 0.03   # 3.00%
+  maximum_daily_new_exposure_pct: 0.05
+  daily_stop_loss_pct: 0.02
+  weekly_stop_loss_pct: 0.05
+  min_stake: 5.0                     # Betfair minimum bet size (AUD)
+
+execution:
+  persistence_type: "LAPSE"
+  order_timeout_seconds: 20          # cancel unmatched remainder after this
+  allow_in_play: false
+  customer_ref_prefix: "d1bot"
+
+storage:
+  sqlite_path: "data/betfair_bot.sqlite3"
+
+reporting:
+  daily_report_hour: 22
