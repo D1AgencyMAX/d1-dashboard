@@ -99,7 +99,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="betfair-bot")
     parser.add_argument(
         "command",
-        choices=["run", "scan", "report", "check-config", "fit-football"],
+        choices=["run", "scan", "report", "check-config", "fit-football", "setup-keys"],
     )
     parser.add_argument("--config", default=None, help="path to YAML config")
     parser.add_argument("-v", "--verbose", action="store_true")
@@ -112,6 +112,10 @@ def main(argv: list[str] | None = None) -> int:
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    if args.command == "setup-keys":
+        from .betfair.setup import run_setup
+        return run_setup()
+
     cfg = load_config(args.config)
 
     if args.command == "fit-football":
