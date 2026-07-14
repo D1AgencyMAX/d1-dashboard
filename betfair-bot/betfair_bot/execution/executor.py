@@ -174,8 +174,12 @@ class LiveExecutor(Executor):
         refresh_prices(self.client, {opportunity.market.market_id: opportunity.market})
 
     def submit(self, opp: Opportunity, stake: float, ref: str) -> BetRecord:
+        from ..betfair.ticks import nearest_tick
+
         runner = opp.market.runner(opp.selection_id)
-        price = runner.back_price if runner else opp.odds
+        # Book prices are already on the ladder; snapping is a guard against
+        # any synthesised price — an off-tick limit is rejected INVALID_ODDS.
+        price = nearest_tick(runner.back_price if runner else opp.odds)
         record = BetRecord(
             customer_order_ref=ref,
             market_id=opp.market.market_id,

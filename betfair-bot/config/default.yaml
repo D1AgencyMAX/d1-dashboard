@@ -13,7 +13,12 @@ betfair:
   identity_endpoint: "https://identitysso-cert.betfair.com/api/certlogin"
   keep_alive_endpoint: "https://identitysso.betfair.com/api/keepAlive"
   keep_alive_minutes: 15
-  commission_rate: 0.05     # conservative default; the true Market Base Rate is in market rules
+  commission_rate: 0.05     # FALLBACK only — the per-market Market Base Rate from
+                            # the catalogue is used when available (AU racing is
+                            # often 6-10%, sports typically 5%)
+  premium_charge_rate: 0.0  # long-run haircut for consistently winning accounts
+                            # (Betfair Premium Charge starts at 20% of gross profit;
+                            # set to 0.20 once the bot is provably profitable)
   max_request_weight: 200   # Betfair aggregate weight cap per data request
   price_poll_seconds: 60
 
@@ -83,6 +88,7 @@ selection:
   minimum_model_confidence: 0.70
   safety_margin: 0.01                # P_lower_bound must beat break-even by this
   max_price_drift_pct: 0.05          # reject if price moved more than this since scoring
+  max_spread_ticks: 5                # reject if back/lay spread wider than this (or lay unquoted)
   min_available_liquidity: 200       # AUD available at our price or better
   min_historical_sample: 300         # model must be trained on at least this many events
   max_model_disagreement: 0.08       # spread between component estimates

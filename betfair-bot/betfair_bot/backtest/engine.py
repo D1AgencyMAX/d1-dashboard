@@ -116,7 +116,7 @@ def run_backtest(
     pipeline: DecisionPipeline,
     risk: RiskEngine,
     replay: Iterable[tuple[MarketSnapshot, dict[int, int], dict[int, float] | None]],
-    slippage_ticks: float = 0.01,
+    slippage_ticks: int = 1,
     retrain: Callable[[MarketSnapshot], None] | None = None,
 ) -> BacktestResult:
     """Replay snapshots chronologically.
@@ -125,11 +125,22 @@ def run_backtest(
     selection_id -> 1/0 and closing_odds maps selection_id -> last pre-event
     price (for CLV). Snapshots must be point-in-time: the pipeline only ever
     sees what was knowable at that moment.
+
+    Costs are modelled as live: per-market commission (Market Base Rate plus
+    any premium-charge haircut) and fills degraded by `slippage_ticks` steps
+    down the Betfair price ladder.
     """
+    from ..betfair.ticks import tick_down
+    from ..selection.costs import market_commission
+
     result = BacktestResult()
-    commission = pipeline.cfg.betfair.commission_rate
 
     for snapshot, outcomes, closing in replay:
+        commission = market_commission(
+            snapshot,
+            fallback_rate=pipeline.cfg.betfair.commission_rate,
+            premium_charge_rate=pipeline.cfg.betfair.premium_charge_rate,
+        )
         if retrain is not None:
             retrain(snapshot)  # walk-forward: only past data may enter the model
         result.markets_seen += 1
@@ -147,7 +158,7 @@ def run_backtest(
             stake = risk.calculate_stake(opp)
             if stake <= 0:
                 continue
-            fill_odds = max(1.01, opp.odds * (1.0 - slippage_ticks))
+            fill_odds = tick_down(opp.odds, slippage_ticks)
             bet = BacktestBet(
                 market_id=snapshot.market_id,
                 selection_id=opp.selection_id,

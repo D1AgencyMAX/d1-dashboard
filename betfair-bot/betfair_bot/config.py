@@ -35,6 +35,7 @@ class SelectionConfig:
     minimum_model_confidence: float = 0.70
     safety_margin: float = 0.01
     max_price_drift_pct: float = 0.05
+    max_spread_ticks: int = 5
     min_available_liquidity: float = 200.0
     min_historical_sample: int = 300
     max_model_disagreement: float = 0.08
@@ -57,7 +58,8 @@ class BetfairConfig:
     identity_endpoint: str = "https://identitysso-cert.betfair.com/api/certlogin"
     keep_alive_endpoint: str = "https://identitysso.betfair.com/api/keepAlive"
     keep_alive_minutes: int = 15
-    commission_rate: float = 0.05
+    commission_rate: float = 0.05      # fallback only; per-market MBR wins
+    premium_charge_rate: float = 0.0   # long-run haircut once consistently winning
     max_request_weight: int = 200
     price_poll_seconds: int = 60
 

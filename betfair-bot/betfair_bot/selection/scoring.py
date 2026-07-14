@@ -36,6 +36,7 @@ def check_rejections(
     selections_confirmed: bool = True,
     api_healthy: bool = True,
     data_fresh: bool = True,
+    spread_ticks: int | None = None,
     now: datetime | None = None,
 ) -> list[RejectionReason]:
     """Run every automatic rejection condition; empty list means eligible."""
@@ -56,6 +57,11 @@ def check_rejections(
         reasons.append(RejectionReason.MISSING_SELECTIONS)
     if available_size < cfg.min_available_liquidity:
         reasons.append(RejectionReason.INSUFFICIENT_LIQUIDITY)
+    # A wide back/lay spread means the quoted price is fragile and true fair
+    # value is poorly located — the edge estimate cannot be trusted at it.
+    # An unquoted lay side (spread unknown) is treated as wide.
+    if spread_ticks is None or spread_ticks > cfg.max_spread_ticks:
+        reasons.append(RejectionReason.WIDE_SPREAD)
     if estimate.confidence < cfg.minimum_model_confidence:
         reasons.append(RejectionReason.LOW_CONFIDENCE)
     if estimate.disagreement > cfg.max_model_disagreement:
@@ -86,16 +92,24 @@ def build_opportunity(
     commission: float,
     *,
     source_quality: float = 0.5,
-    price_stability: float = 1.0,
+    price_stability: float | None = None,
     calibration_quality: float = 0.5,
     data_completeness: float = 1.0,
 ) -> Opportunity | None:
     """Score one selection as a BACK opportunity; None if no executable price."""
+    from ..betfair.ticks import spread_ticks as _spread_ticks
+
     runner = market.runner(estimate.selection_id)
     if runner is None or runner.status != "ACTIVE" or not runner.back_price:
         return None
     odds = runner.back_price
     ev = back_expected_value(estimate.probability, odds, commission)
+
+    if price_stability is None:
+        # Tighter spread = better-located, more stable price. 0 ticks → 1.0,
+        # 10+ ticks (or no lay quote) → 0.
+        ticks = _spread_ticks(runner.back_price, runner.lay_price)
+        price_stability = max(0.0, 1.0 - ticks / 10.0) if ticks is not None else 0.0
 
     w = cfg.opportunity_score_weights
     # EV mapped so the configured floor scores 0 and 3x the floor saturates at 1.

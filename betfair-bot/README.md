@@ -91,6 +91,19 @@ models), `".[news]"` (Anthropic client for news fact extraction),
   unmatched remainder cancelled after a timeout, then reconciled via
   `listCurrentOrders`/`listClearedOrders`.
 
+## Cost model — every fee and friction accounted for
+
+| Cost | How it's handled |
+|---|---|
+| Commission (Market Base Rate) | Read per market from the catalogue (`marketBaseRate`) — AU racing often carries 6–10% vs 5% on sports. The config `commission_rate` is only a fallback. Flows through EV, Kelly sizing and the back-test. |
+| Premium Charge | `premium_charge_rate` compounds with MBR (`1-(1-mbr)(1-pc)`), so long-run EV stays honest once the account is consistently winning (Betfair levies 20%+ on such accounts). Default 0 while unproven; set 0.20 when profitable. |
+| Back/lay spread | Measured in ladder ticks per runner. Wider than `max_spread_ticks` (or lay side unquoted) → automatic rejection: a wide spread means fair value is poorly located and the edge estimate can't be trusted. Spread also drives the `price_stability` score. |
+| Tick ladder | All prices snap to Betfair's tick ladder (`betfair/ticks.py`); off-tick limit orders would be rejected `INVALID_ODDS`. Back-test slippage is applied in ladder ticks (default 1 tick against us), not percentages. |
+| Slippage / partial fills | Paper fills cap at visible top-of-book size; live orders wait, cancel the unmatched remainder and reconcile actual matched size/price. |
+| Liquidity | `min_available_liquidity` floor at scoring, and stake ≤ visible size at execution. |
+| Transaction charges | Betfair charges for >1,000 bet transactions/hour; the executor's one-order-at-a-time design keeps volume orders of magnitude below that. |
+| Data request weights | All `listMarketBook` polling batched under the 200-point aggregate cap. |
+
 ## Bet acceptance
 
 A selection must survive **all** of:

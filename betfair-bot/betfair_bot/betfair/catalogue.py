@@ -71,11 +71,15 @@ def discover_markets(
             if min_matched and total_matched < min_matched:
                 continue
             desc = cat.get("description") or {}
+            # marketBaseRate arrives as a percentage (e.g. 5.0); commission on
+            # this specific market — AU racing is often higher than sports.
+            mbr = desc.get("marketBaseRate")
             snapshots.append(
                 MarketSnapshot(
                     market_id=cat["marketId"],
                     sport=sport,
                     market_type=desc.get("marketType", ""),
+                    market_base_rate=float(mbr) / 100.0 if mbr is not None else None,
                     event_id=str((cat.get("event") or {}).get("id", "")),
                     event_name=(cat.get("event") or {}).get("name", ""),
                     competition=(cat.get("competition") or {}).get("name", ""),

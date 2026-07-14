@@ -42,7 +42,7 @@ def make_estimate(p=0.40, lb=None, confidence=0.85, n=1000, disagreement=0.02):
 def test_good_bet_passes_all_gates():
     reasons = check_rejections(
         make_market(), make_estimate(), odds=3.0, available_size=500,
-        cfg=SelectionConfig(), commission=COMMISSION, now=NOW,
+        cfg=SelectionConfig(), commission=COMMISSION, spread_ticks=1, now=NOW,
     )
     assert reasons == []
 

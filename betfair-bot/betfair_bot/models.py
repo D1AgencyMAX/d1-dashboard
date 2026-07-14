@@ -39,6 +39,7 @@ class RejectionReason(str, enum.Enum):
     SMALL_SAMPLE = "historical_sample_too_small"
     CORRELATED_EXPOSURE = "correlated_exposure_already_open"
     STARTS_TOO_SOON = "market_starts_too_soon"
+    WIDE_SPREAD = "back_lay_spread_too_wide"
     STALE_DATA = "data_is_stale"
     API_UNHEALTHY = "betfair_api_or_stream_unhealthy"
     DAILY_LOSS_LIMIT = "daily_loss_limit_reached"
@@ -93,6 +94,9 @@ class MarketSnapshot:
     turn_in_play_enabled: bool = False
     total_matched: float = 0.0
     total_available: float = 0.0
+    # Market Base Rate (commission fraction, e.g. 0.05) from the market rules;
+    # None means unknown → fall back to the configured default.
+    market_base_rate: float | None = None
     captured_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def runner(self, selection_id: int) -> RunnerBook | None:

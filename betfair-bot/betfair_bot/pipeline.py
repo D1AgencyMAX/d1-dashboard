@@ -10,6 +10,7 @@ import logging
 from datetime import datetime
 from typing import Callable
 
+from .betfair.ticks import spread_ticks
 from .config import BotConfig
 from .modeling import ensemble
 from .modeling.calibration import ShrinkageCalibrator
@@ -24,7 +25,7 @@ from .models import (
 from .research.base import ResearchModule
 from .research.feature_store import FeatureStore
 from .research.orderbook import order_book_component
-from .selection import scoring
+from .selection import costs, scoring
 
 log = logging.getLogger(__name__)
 
@@ -114,7 +115,13 @@ class DecisionPipeline:
         if module is None:
             return [], {}
         sel_cfg = self.cfg.selection
-        commission = self.cfg.betfair.commission_rate
+        # Per-market commission: the market's own base rate (AU racing often
+        # carries 6-10%) plus any configured premium-charge haircut.
+        commission = costs.market_commission(
+            market,
+            fallback_rate=self.cfg.betfair.commission_rate,
+            premium_charge_rate=self.cfg.betfair.premium_charge_rate,
+        )
         research_cfg = self.cfg.research
 
         unverified_news = self.store.has_unverified_material_news(
@@ -148,6 +155,7 @@ class DecisionPipeline:
                 selections_confirmed=selections_ok,
                 api_healthy=api_healthy,
                 data_fresh=data_fresh,
+                spread_ticks=spread_ticks(runner.back_price, runner.lay_price),
                 now=now,
             )
             if reasons:
@@ -159,7 +167,7 @@ class DecisionPipeline:
                 sel_cfg,
                 commission,
                 source_quality=self._source_quality(market),
-                price_stability=1.0,
+                price_stability=None,  # derived from the back/lay spread
                 calibration_quality=self.calibration_quality,
                 data_completeness=completeness,
             )
