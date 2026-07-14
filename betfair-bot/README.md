@@ -112,6 +112,44 @@ Survivors are ranked by the weighted opportunity score (35% EV, 20%
 confidence, 15% calibration quality, 10% liquidity, 10% source quality,
 5% price stability, 5% completeness) and executed in order.
 
+## The edge engine
+
+Edges come from the pipeline in `betfair_bot/modeling/` that turns raw history
+into fitted, calibrated, market-aware probabilities:
+
+1. **Model fitting from data**
+   - `dixon_coles.py` — maximum-likelihood attack/defence ratings with
+     exponential time decay (recent form counts more) and L2 shrinkage to
+     average for thin samples. `betfair-bot fit-football --league E0
+     --seasons 2223,2324,2425` fetches football-data.co.uk, fits, reports
+     holdout log loss vs the uniform baseline, and saves to
+     `data/ratings/football.json` where the bot auto-loads it.
+   - `elo_fit.py` — surface-specific tennis Elo with decaying K-factor and
+     cross-surface transfer, replayed chronologically (point-in-time safe for
+     back-testing by construction).
+2. **Learned ensemble weights** — `weight_optimizer.py` fits the component
+   weights on the probability simplex by minimising log loss over graded
+   history, per sport. It also computes each component's marginal value
+   (loss increase when removed) — the automated "does this source still add
+   predictive value?" test; `prune_useless_components` flags dead sources.
+3. **Fitted calibration** — `logistic_calibration.py` learns
+   `p_fair = σ(a·logit(p_model) + b·logit(p_market) + c)` from graded bets:
+   `a` shrinks model overconfidence, `b` learns how much the market already
+   knows, `c` corrects systematic bias (e.g. longshot bias). Drop-in
+   replacement for the bootstrap `ShrinkageCalibrator`; auto-loaded once
+   saved.
+4. **Order-book intelligence** — `research/orderbook.py` reads the exchange
+   itself: back/lay depth imbalance, price momentum from recorded snapshots,
+   and visible-depth-scaled confidence. It enters the ensemble as the
+   `betfair_order_book` component as a capped ±6% tilt on the market prior —
+   steam is information, but the moved price must still clear the EV filter,
+   so shortening odds never automatically create a bet.
+
+The intended loop: fit models → run paper mode (accumulates graded
+predictions and price history) → refit weights and calibration from that
+history → repeat. Every refit is measured by holdout log loss, so the engine
+only ever earns trust it can demonstrate.
+
 ## Validating edge before real money
 
 1. **Historical back-test** (`betfair_bot/backtest/engine.py`): point-in-time

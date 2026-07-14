@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
+from typing import Callable
 
 from .config import BotConfig
 from .modeling import ensemble
@@ -22,9 +23,14 @@ from .models import (
 )
 from .research.base import ResearchModule
 from .research.feature_store import FeatureStore
+from .research.orderbook import order_book_component
 from .selection import scoring
 
 log = logging.getLogger(__name__)
+
+# Any object with .calibrate(model_p, market_p) -> float works here
+# (ShrinkageCalibrator until fitted, LogisticCalibrator once graded data exists).
+PriceHistoryFn = Callable[[str, int], list[tuple[datetime, float]]]
 
 
 class DecisionPipeline:
@@ -35,12 +41,20 @@ class DecisionPipeline:
         store: FeatureStore,
         calibrator: ShrinkageCalibrator | None = None,
         calibration_quality: float = 0.5,
+        price_history_fn: PriceHistoryFn | None = None,
+        sport_weights: dict[Sport, dict[str, float]] | None = None,
     ):
         self.cfg = cfg
         self.research = research_modules
         self.store = store
         self.calibrator = calibrator or ShrinkageCalibrator()
         self.calibration_quality = calibration_quality
+        self.price_history_fn = price_history_fn
+        # Per-sport learned weights override the config priors once fitted.
+        self.sport_weights = sport_weights or {}
+
+    def weights_for(self, sport: Sport) -> dict[str, float]:
+        return self.sport_weights.get(sport, self.cfg.ensemble_weights)
 
     # -------------------------------------------------------------- estimate
 
@@ -50,14 +64,27 @@ class DecisionPipeline:
             return {}
         components = module.component_estimates(market, self.store)
         market_probs = market_implied_probabilities(market)
+        weights = self.weights_for(market.sport)
 
         estimates: dict[int, ProbabilityEstimate] = {}
         for selection_id, comps in components.items():
             if not comps:
                 continue
+            # Order-book behaviour (pressure, steam, late volume) joins the
+            # ensemble as its own component when a book is visible.
+            runner = market.runner(selection_id)
+            if runner is not None:
+                history = (
+                    self.price_history_fn(market.market_id, selection_id)
+                    if self.price_history_fn
+                    else []
+                )
+                ob = order_book_component(market, runner, history)
+                if ob is not None:
+                    comps = comps + [ob]
             est = ensemble.combine(
                 comps,
-                self.cfg.ensemble_weights,
+                weights,
                 market_id=market.market_id,
                 selection_id=selection_id,
             )
