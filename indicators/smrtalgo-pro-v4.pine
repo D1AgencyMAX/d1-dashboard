@@ -1,0 +1,169 @@
+//@version=6
+// =============================================================================
+// Pro V4 [SMRT Algo]
+// -----------------------------------------------------------------------------
+// Re-creation of the "Pro V4 [SMRT Algo]" signal indicator with the input
+// layout and default values captured from the settings screenshot
+// (ETHUSDT.P, Scalp / Advance classifier preset).
+//
+// Companion to the "KenLux Signal" build. Every visible control from the
+// BASIC SETTINGS and ENHANCE SYSTEMS panels is reproduced below with the same
+// wording, grouping, default value and enable/disable state.
+// =============================================================================
+
+indicator("Pro V4 [SMRT Algo]", overlay = true, max_labels_count = 500)
+
+// =============================================================================
+// BASIC SETTINGS
+// =============================================================================
+grpBasic = "Basic Settings"
+
+showSignals   = input.bool(true,        "Show Signals",                                                          group = grpBasic)
+aiClassifier  = input.string("Advance",  "AI Classifier Type",   options = ["Basic", "Advance", "Pro"],          group = grpBasic)
+sigSensitivity= input.float(1.5,         "Signal Sensitivity",   minval = 0.1, maxval = 10.0, step = 0.1,        group = grpBasic)
+sigCalibration= input.int(150,           "Signal Calibration",   minval = 1,   maxval = 1000,                    group = grpBasic)
+tradingType   = input.string("Scalp",    "Trading Type",         options = ["Scalp", "Intraday", "Swing"],       group = grpBasic)
+useLabelOffset= input.bool(true,         "Label Offset",                                                         group = grpBasic, inline = "loff")
+labelOffset   = input.int(1,             "",                     minval = 0,   maxval = 50,                       group = grpBasic, inline = "loff")
+candleColoring= input.string("Gradient", "Candle Coloring",      options = ["Off", "Gradient", "Solid"],         group = grpBasic)
+
+// Colors (cyan / hot-pink / purple as shown in the swatch row)
+colBull = input.color(#00E5FF, "Colors", group = grpBasic, inline = "cols")
+colBear = input.color(#FF1E56, "",       group = grpBasic, inline = "cols")
+colNeut = input.color(#8000FF, "",       group = grpBasic, inline = "cols")
+
+// =============================================================================
+// ENHANCE SYSTEMS
+// Each module has an on/off toggle (all OFF by default, matching the shot)
+// paired with its tuning value. When disabled the module contributes nothing
+// to the composite score.
+// =============================================================================
+grpEnhance = "Enhance Systems"
+
+useFib   = input.bool(false, "Fibonacci Number (Price Noise)",      group = grpEnhance, inline = "fib")
+fibLen   = input.int(30,     "",  minval = 1, maxval = 500,          group = grpEnhance, inline = "fib")
+
+useLinReg= input.bool(false, "Linear Regression (Price Mean)",      group = grpEnhance, inline = "lr")
+linRegLen= input.int(2,      "",  minval = 1, maxval = 500,          group = grpEnhance, inline = "lr")
+
+useTrend = input.bool(false, "Trend Ranges (Price Range)",          group = grpEnhance, inline = "tr")
+trendLen = input.int(100,    "",  minval = 1, maxval = 1000,         group = grpEnhance, inline = "tr")
+
+useTR    = input.bool(false, "True Range (Price Volatility)",       group = grpEnhance, inline = "atr")
+trMult   = input.float(3.5,  "",  minval = 0.1, maxval = 20.0, step = 0.1, group = grpEnhance, inline = "atr")
+
+useLiq   = input.bool(false, "Liquidity Ratio (Price Sweep)",       group = grpEnhance, inline = "liq")
+liqLen   = input.int(35,     "",  minval = 1, maxval = 500,          group = grpEnhance, inline = "liq")
+
+useFlow  = input.bool(false, "Dynamic Flow (Price Flow)",           group = grpEnhance, inline = "flow")
+flowLen  = input.int(4,      "",  minval = 1, maxval = 200,          group = grpEnhance, inline = "flow")
+
+useMA    = input.bool(false, "Moving Average (Price Average)",      group = grpEnhance, inline = "ma")
+maFactor = input.float(0.5,  "",  minval = 0.1, maxval = 10.0, step = 0.1, group = grpEnhance, inline = "ma")
+
+// =============================================================================
+// CLASSIFIER CORE
+// -----------------------------------------------------------------------------
+// A momentum/mean-reversion composite whose responsiveness scales with the
+// Signal Sensitivity, Calibration and the selected Trading Type. The AI
+// Classifier Type widens the confirmation window as it steps up.
+// =============================================================================
+
+// Trading Type sets the base lookback (scalp = fastest).
+baseLen = switch tradingType
+    "Scalp"    => 5
+    "Intraday" => 14
+    "Swing"    => 34
+    => 14
+
+// Classifier tier adds confirmation smoothing.
+tierSmooth = switch aiClassifier
+    "Basic"   => 1
+    "Advance" => 2
+    "Pro"     => 3
+    => 2
+
+// Calibration nudges the effective length; sensitivity scales the trigger band.
+effLen  = math.max(1, int(baseLen + sigCalibration / 50.0))
+band    = ta.atr(effLen) * sigSensitivity
+
+// Core signal line: EMA of price, confirmation-smoothed by the tier.
+basis   = ta.ema(close, effLen)
+signalL = ta.ema(basis, tierSmooth)
+
+// -----------------------------------------------------------------------------
+// Composite score from the (optional) Enhance Systems.
+// -----------------------------------------------------------------------------
+score = 0.0
+
+if useFib
+    noise = ta.stdev(close, fibLen)
+    score := score + (close > basis + noise ? 1 : close < basis - noise ? -1 : 0)
+
+if useLinReg
+    lr = ta.linreg(close, math.max(2, linRegLen), 0)
+    score := score + (close > lr ? 1 : -1)
+
+if useTrend
+    hh = ta.highest(high, trendLen)
+    ll = ta.lowest(low, trendLen)
+    mid = (hh + ll) / 2
+    score := score + (close > mid ? 1 : -1)
+
+if useTR
+    vol = ta.atr(effLen) * trMult
+    score := score + (close > signalL + vol ? 1 : close < signalL - vol ? -1 : 0)
+
+if useLiq
+    sweepHi = ta.highest(high, liqLen)
+    sweepLo = ta.lowest(low, liqLen)
+    score := score + (high >= sweepHi ? -1 : low <= sweepLo ? 1 : 0)
+
+if useFlow
+    flow = ta.ema(close - open, flowLen)
+    score := score + (flow > 0 ? 1 : -1)
+
+if useMA
+    ma = ta.sma(close, math.max(1, int(effLen * maFactor)))
+    score := score + (close > ma ? 1 : -1)
+
+// =============================================================================
+// SIGNAL LOGIC
+// =============================================================================
+crossUp   = ta.crossover(close, signalL + band)
+crossDown = ta.crossunder(close, signalL - band)
+
+// Enhance Systems act as a confirmation gate only while at least one is on.
+anyEnhance = useFib or useLinReg or useTrend or useTR or useLiq or useFlow or useMA
+longOK    = not anyEnhance or score > 0
+shortOK   = not anyEnhance or score < 0
+
+buySignal  = crossUp   and longOK
+sellSignal = crossDown and shortOK
+
+// =============================================================================
+// PLOTTING
+// =============================================================================
+
+// Gradient candle coloring driven by distance of price from the signal line.
+grad = candleColoring == "Gradient"
+sol  = candleColoring == "Solid"
+dist = (close - signalL) / (band == 0 ? 1 : band)
+cGrad = close >= signalL ? color.from_gradient(dist,  0, 1.5, color.new(colBull, 60), colBull) : color.from_gradient(dist, -1.5, 0, colBear, color.new(colBear, 60))
+cSolid = close >= signalL ? colBull : colBear
+barColor = grad ? cGrad : sol ? cSolid : na
+barcolor(candleColoring == "Off" ? na : barColor)
+
+// Signal labels.
+offset = useLabelOffset ? labelOffset : 0
+
+plotshape(showSignals and buySignal,  title = "Buy",  style = shape.labelup,   location = location.belowbar, color = colBull, textcolor = color.white, text = "BUY",  size = size.tiny, offset = -offset)
+plotshape(showSignals and sellSignal, title = "Sell", style = shape.labeldown, location = location.abovebar, color = colBear, textcolor = color.white, text = "SELL", size = size.tiny, offset = -offset)
+
+plot(signalL, title = "Signal Line", color = color.new(colNeut, 20), linewidth = 2)
+
+// =============================================================================
+// ALERTS
+// =============================================================================
+alertcondition(buySignal,  title = "SMRT Algo — Buy",  message = "Pro V4 [SMRT Algo]: BUY signal")
+alertcondition(sellSignal, title = "SMRT Algo — Sell", message = "Pro V4 [SMRT Algo]: SELL signal")
