@@ -1,0 +1,5 @@
+# Core engine
+numpy>=1.24
+
+# Optional: only needed for CcxtBroker / run_live() against a real exchange
+# ccxt>=4.0
